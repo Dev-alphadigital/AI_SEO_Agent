@@ -1,1 +1,12 @@
 .planning/
+
+# Environment and secrets
+.env
+tokens.json
+credentials.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
