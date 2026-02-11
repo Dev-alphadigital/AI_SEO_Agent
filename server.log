@@ -1,0 +1,31 @@
+INFO:     Started server process [32344]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60251 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60262 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60278 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60285 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60288 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60295 - "GET /api/v1/auth/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60296 - "GET /api/v1/auth/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60298 - "POST /api/v1/auth/initiate HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:60300 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61232 - "GET /api/v1/documents/templates HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61273 - "GET /api/v1/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61273 - "GET /status HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61273 - "GET /api/v1/status HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61326 - "GET /api/v1/templates HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61326 - "GET /api/v1/templates HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61386 - "OPTIONS /api/v1/conversation/start HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61536 - "GET /api/v1/templates HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62561 - "GET /api/v1/analytics/bot-usage?granularity=monthly HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62561 - "GET /api/v1/analytics/total-users HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62561 - "GET /api/v1/analytics/total-users HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62561 - "GET /api/v1/analytics/ HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62646 - "GET /api/v1/analytics/total-users HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62646 - "GET /api/v1/analytics/documents-generated HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62646 - "GET /api/v1/analytics/documents-generated HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62646 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62690 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62690 - "GET /openapi.json HTTP/1.1" 200 OK

@@ -1,0 +1,73 @@
+help content team innovate automated systems 
+
+
+primarily traditional writers 
+SEO writers
+some ai exposure 
+low code workflows zapier
+
+
+topic ideation 
+keyword research analysis 
+briefing to structure content
+prod
+
+
+
+stable workflows 
+consistent
+-reduce prod time of each content 
+-
+
+keyword research for client
+identify what not ranking for 
+identify topics what to write about 
+
+data visualization of the workflow 
+outline inputs and req outputs 
+
+
+topic ideation tools 
+topic ideation - defining what content to produce to be able to rank ideal keyword 
+
+URL
+target keyword
+triggers
+
+find set of info 
+URL ranking from search console
+keywords that it is ranking for 
+
+additional keywords that support primary keyword
+questions about the keyword  - scrape 
+
+context of the page-does this page satisfy 
+
+
+
+agent that can take bunch of information 
+and generate output doc 
+template 
+reoptimization 
+
+web parsing agent 
+scores 
+
+agent will need to gather
+data from number of sources
+
+google search console
+ahref
+
+scrape of top 10 
+compiles it 
+
+limitations 
+2 weeks?
+gives information yourself 
+opp to refine 
+if output usable 
+next project 
+cap for number of hours 
+
+
