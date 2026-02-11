@@ -1,6 +1,6 @@
 """FastAPI application entry point."""
 from fastapi import FastAPI
-from app.routers import health, analyze
+from app.routers import health, analyze, auth
 from app.config import get_settings
 
 app = FastAPI(
@@ -10,8 +10,8 @@ app = FastAPI(
 
 # Include routers
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(analyze.router)
-# auth.router included in Plan 02
 
 
 if __name__ == "__main__":
