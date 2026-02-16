@@ -1,6 +1,7 @@
 """Page scraper — extracts on-page SEO elements from a URL."""
 import json
 import logging
+import random
 from urllib.parse import urlparse, urljoin
 
 import httpx
@@ -10,6 +11,31 @@ from app.models.schemas import PageSEO
 
 logger = logging.getLogger(__name__)
 
+_USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15",
+]
+
+
+def _request_headers() -> dict[str, str]:
+    """Return realistic browser headers to avoid bot detection."""
+    return {
+        "User-Agent": random.choice(_USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Cache-Control": "max-age=0",
+    }
+
 
 def _get_meta_content(soup: BeautifulSoup, attrs: dict) -> str:
     """Extract content attribute from a meta tag, or empty string."""
@@ -17,14 +43,27 @@ def _get_meta_content(soup: BeautifulSoup, attrs: dict) -> str:
     return tag.get("content", "").strip() if tag else ""
 
 
+async def _fetch_html(url: str) -> httpx.Response:
+    """Fetch URL with retry on 403 using a different user-agent."""
+    async with httpx.AsyncClient(
+        timeout=20,
+        follow_redirects=True,
+        http2=True,
+    ) as client:
+        resp = await client.get(url, headers=_request_headers())
+        if resp.status_code == 403:
+            # Retry with a Google cache-style referer and different UA
+            retry_headers = _request_headers()
+            retry_headers["Referer"] = "https://www.google.com/"
+            resp = await client.get(url, headers=retry_headers)
+        resp.raise_for_status()
+        return resp
+
+
 async def scrape_page(url: str) -> PageSEO:
     """Scrape a URL and extract SEO-relevant elements."""
     try:
-        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
-            resp = await client.get(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; SEOBot/1.0)",
-            })
-            resp.raise_for_status()
+        resp = await _fetch_html(url)
 
         content_type = resp.headers.get("content-type", "")
         if "text/html" not in content_type:
@@ -85,12 +124,14 @@ async def scrape_page(url: str) -> PageSEO:
         for script in soup.find_all("script", type="application/ld+json"):
             try:
                 data = json.loads(script.string or "")
-                if isinstance(data, dict) and "@type" in data:
-                    schema_types.append(data["@type"])
-                elif isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict) and "@type" in item:
-                            schema_types.append(item["@type"])
+                items = data if isinstance(data, list) else [data]
+                for item in items:
+                    if isinstance(item, dict) and "@type" in item:
+                        t = item["@type"]
+                        if isinstance(t, list):
+                            schema_types.extend(str(x) for x in t)
+                        else:
+                            schema_types.append(str(t))
             except (json.JSONDecodeError, TypeError):
                 pass
         has_schema_markup = len(schema_types) > 0
