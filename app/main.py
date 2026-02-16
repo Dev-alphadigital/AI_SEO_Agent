@@ -1,4 +1,6 @@
 """FastAPI application entry point."""
+import os
+
 from fastapi import FastAPI
 from app.routers import health, analyze, auth
 from app.config import get_settings
@@ -12,6 +14,9 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(analyze.router)
+
+# Ensure output directory exists on startup
+os.makedirs("output", exist_ok=True)
 
 
 if __name__ == "__main__":

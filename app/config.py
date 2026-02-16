@@ -8,8 +8,9 @@ class Settings(BaseSettings):
 
     app_name: str = "AI SEO Agent"
     api_port: int = 8000
-    google_client_id: str
-    google_client_secret: str
+    ahrefs_api_key: str = ""
+    google_client_id: str = ""
+    google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/api/v1/auth/callback"
     token_file: str = "tokens.json"
     credentials_file: str = "credentials.json"
