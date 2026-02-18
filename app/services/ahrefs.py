@@ -1,6 +1,6 @@
 """Ahrefs API v3 client for SEO metrics."""
 import logging
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import urlparse
 
 import httpx
@@ -26,9 +26,9 @@ def _domain(url: str) -> str:
     return parsed.netloc or parsed.path
 
 
-def _today() -> str:
-    """Return today's date as YYYY-MM-DD for Ahrefs date param."""
-    return date.today().isoformat()
+def _recent_date() -> str:
+    """Return a recent date for Ahrefs API (data lags ~3 days)."""
+    return (date.today() - timedelta(days=3)).isoformat()
 
 
 async def get_domain_metrics(target: str) -> AhrefsMetrics:
@@ -40,7 +40,7 @@ async def get_domain_metrics(target: str) -> AhrefsMetrics:
             resp = await client.get(
                 f"{BASE_URL}/site-explorer/domain-rating",
                 headers=_headers(),
-                params={"target": domain, "date": _today(), "output": "json"},
+                params={"target": domain, "date": _recent_date(), "output": "json"},
             )
             resp.raise_for_status()
             dr_data = resp.json().get("domain_rating", {})
@@ -51,7 +51,7 @@ async def get_domain_metrics(target: str) -> AhrefsMetrics:
                 headers=_headers(),
                 params={
                     "target": domain,
-                    "date": _today(),
+                    "date": _recent_date(),
                     "output": "json",
                     "select": "org_keywords,org_traffic",
                 },
@@ -63,7 +63,7 @@ async def get_domain_metrics(target: str) -> AhrefsMetrics:
             resp3 = await client.get(
                 f"{BASE_URL}/site-explorer/backlinks-stats",
                 headers=_headers(),
-                params={"target": domain, "date": _today(), "output": "json"},
+                params={"target": domain, "date": _recent_date(), "output": "json"},
             )
             resp3.raise_for_status()
             bl = resp3.json().get("metrics", {})
@@ -132,7 +132,7 @@ async def get_serp_overview(keyword: str, country: str = "us") -> list[SerpEntry
                 params={
                     "keyword": keyword,
                     "country": country,
-                    "date": _today(),
+                    "date": _recent_date(),
                     "output": "json",
                     "select": "position,url,title,domain_rating",
                 },
@@ -165,7 +165,7 @@ async def get_backlinks_summary(target: str) -> dict:
             resp = await client.get(
                 f"{BASE_URL}/site-explorer/backlinks-stats",
                 headers=_headers(),
-                params={"target": domain, "date": _today(), "output": "json"},
+                params={"target": domain, "date": _recent_date(), "output": "json"},
             )
             resp.raise_for_status()
             return resp.json()

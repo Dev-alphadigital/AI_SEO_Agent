@@ -93,3 +93,10 @@ class SEOBrief(BaseModel):
     gap_analysis: GapAnalysis
     markdown_path: str = ""
     warnings: list[str] = []
+
+
+class ReoptimizationBrief(SEOBrief):
+    """SEO brief extended with AI-generated reoptimization output."""
+    ai_brief: str = ""
+    ai_model: str = ""
+    ai_markdown_path: str = ""

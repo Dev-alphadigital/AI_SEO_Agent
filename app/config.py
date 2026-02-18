@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     google_redirect_uri: str = "http://localhost:8000/api/v1/auth/callback"
     token_file: str = "tokens.json"
     credentials_file: str = "credentials.json"
+    openrouter_api_key: str = ""
+    openrouter_model: str = "deepseek/deepseek-r1-0528:free"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
