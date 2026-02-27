@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git check-ignore:*)",
+      "WebSearch",
+      "Skill(gsd:execute-phase)",
+      "WebFetch(domain:docs.ahrefs.com)",
+      "WebFetch(domain:ahrefs.com)",
+      "WebFetch(domain:help.ahrefs.com)",
+      "Bash(pip install:*)",
+      "Bash(timeout 5 python:*)",
+      "Bash(python -c:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Get-Process -Name python -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match ''uvicorn'' } | Stop-Process -Force\")",
+      "Bash(powershell -Command:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "WebFetch(domain:www.inktel.com)",
+      "Bash(python -m playwright:*)",
+      "Bash(ipconfig:*)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

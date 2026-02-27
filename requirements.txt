@@ -1,0 +1,29 @@
+# AI SEO Agent — Python dependencies
+
+# FastAPI backend (n8n webhook endpoints)
+fastapi>=0.110.0
+uvicorn>=0.27.0
+
+# Google Search Console API (Priority 1 — must have)
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-api-python-client>=2.0.0
+
+# Gemini API (AI recommendations)
+google-generativeai>=0.8.0
+
+# Scraping & HTTP
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+
+# Headless browser (fallback for bot-blocked sites: Tesla, Nike, Goldman Sachs, etc.)
+playwright>=1.40.0
+
+# Google Docs (.docx) export
+python-docx>=1.1.0
+
+# Markdown → HTML (used by PDF generator)
+markdown>=3.5
+
+# Ahrefs API (keyword MSV — Priority 1). Optional; requires Enterprise plan.
+# pip install "ahrefs-python @ git+https://github.com/ahrefs/ahrefs-python.git"

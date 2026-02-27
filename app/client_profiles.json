@@ -1,0 +1,65 @@
+{
+  "Markup AI": {
+    "target_audience": "Enterprises (tech, healthcare, finance, manufacturing), Developers (technical teams integrating AI), Writers (content creators, marketers). They seek consistent content, automated oversight, integration-ready solutions, insights/scoring, enterprise-grade content governance.",
+    "about_the_brand": "Markup AI helps enterprises close the Content Trust Gap by ensuring AI-generated content is accurate, on-brand, and compliant. Content Guardian Agents scan, score, and rewrite content. Developer-first, API-native.",
+    "values": "Courageous, Linguistically Brilliant, Empowering, Agile, Reliable",
+    "value_proposition": "Content Guardian Agents, API/MCP-native, Developer-first, Enterprise-grade compliance, Real-time content scoring",
+    "brand_positioning": "Category Leadership"
+  },
+  "Armstrong": {
+    "target_audience": "Residential (families, homeowners, renters), Commercial (businesses, office relocations), Specialized (healthcare, manufacturing, pharma, fine art, IT, government, hospitality, e-commerce), Supply Chain, Employees & Talent",
+    "about_the_brand": "Full-service moving and logistics \u00e2\u20ac\u201d residential, commercial, specialized industries.",
+    "values": "Reliable, Professional, Customer-focused",
+    "value_proposition": "Comprehensive moving and logistics for residential, commercial, and specialized industries",
+    "brand_positioning": "Trusted mover"
+  },
+  "Greetly": {
+    "target_audience": "Organizations with physical offices \u00e2\u20ac\u201d corporate offices, manufacturing, logistics",
+    "about_the_brand": "Visitor management and workplace solutions",
+    "values": "Professional, Efficient",
+    "value_proposition": "Designed for organizations with physical offices",
+    "brand_positioning": "Workplace solutions"
+  },
+  "DocuSign": {
+    "target_audience": "Enterprises, SMBs, legal, sales, HR",
+    "about_the_brand": "Electronic signature and agreement cloud",
+    "values": "Trust, Innovation, Customer success",
+    "value_proposition": "Secure e-signatures and agreement management",
+    "brand_positioning": "Agreement cloud leader"
+  },
+  "OfficeSpace": {
+    "target_audience": "Facilities & Workplace Management teams, Facilities Managers, Space Planners, Operations Directors",
+    "about_the_brand": "Workplace and space management software",
+    "values": "Efficiency, Clarity",
+    "value_proposition": "Modern workplace management",
+    "brand_positioning": "Workplace management"
+  },
+  "Goldman Sachs": {
+    "target_audience": "Institutional investors, corporations, governments, high-net-worth individuals",
+    "about_the_brand": "Global investment banking, securities, and investment management",
+    "values": "Excellence, Integrity, Client focus",
+    "value_proposition": "Premier financial institution, research-driven insights",
+    "brand_positioning": "Category leadership, authority"
+  },
+  "Tesla": {
+    "target_audience": "EV buyers, tech enthusiasts, sustainability-focused consumers",
+    "about_the_brand": "Electric vehicles, energy, AI and robotics",
+    "values": "Innovation, Sustainability, Disruption",
+    "value_proposition": "Accelerating sustainable energy, autonomous driving, AI",
+    "brand_positioning": "EV and tech leader"
+  },
+  "Magnus Medical": {
+    "target_audience": "Adults with treatment-resistant depression, healthcare providers, psychiatrists, patients seeking non-invasive mental health treatments",
+    "about_the_brand": "Magnus Medical provides FDA-cleared TMS for major depressive disorder. A calm, confident expert who leads with care and speaks with purpose.",
+    "values": "Care, Confidence, Precision, Patient-centered",
+    "value_proposition": "Non-invasive, evidence-based depression treatment; calm expert voice",
+    "brand_positioning": "Calm confident expert in mental health innovation"
+  },
+  "Daybreak": {
+    "target_audience": "Adults with obstructive sleep apnea (OSA) seeking non-invasive, CPAP-free treatment solutions",
+    "about_the_brand": "Daybreak provides non-invasive, CPAP-free treatment for obstructive sleep apnea (OSA).",
+    "values": "Innovation, Patient comfort, Evidence-based care",
+    "value_proposition": "Non-invasive OSA treatment without CPAP; patient-centered sleep solutions",
+    "brand_positioning": "Sleep apnea treatment innovator"
+  }
+}
