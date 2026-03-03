@@ -1,2 +1,7 @@
 .planning/
 credentials/
+__pycache__/
+*.pyc
+.env
+output/
+nul
