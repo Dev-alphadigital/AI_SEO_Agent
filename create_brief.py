@@ -41,7 +41,7 @@ from app.gsc_client import get_gsc_performance, format_gsc_for_brief
 from app.gemini_client import generate_full_seo_report
 from app.page_scraper import scrape_page
 from app.client_profiles import get_client_profile, list_clients
-from app.ahrefs_client import format_keywords_with_msv, get_competitive_analysis
+from app.ahrefs_client import format_keywords_with_msv, get_competitive_analysis, get_top_pages
 
 
 def _clean_text(text: str) -> str:
@@ -290,7 +290,7 @@ def main():
     slug = _url_to_slug(url)
     property_url = args.property or _derive_gsc_property(url)
 
-    # Scrape page (Priority 3: Issues to Fix, Current State)
+    # Scrape page (full body, headings H1-H6, internal/external links, rich content)
     scrape_result = None
     if not args.no_scrape:
         scrape_result = scrape_page(url, force_playwright=args.playwright)
@@ -298,7 +298,10 @@ def main():
             m = scrape_result.get("method", "?")
             t = (scrape_result.get("title") or "")[:40]
             h = "yes" if scrape_result.get("h1") else "no"
-            print(f"Scrape [{m}]: title={t}..., H1={h}")
+            n_headings = len(scrape_result.get("headings", []))
+            n_int = len(scrape_result.get("internal_links", []))
+            body_words = len(scrape_result.get("body_text", "").split())
+            print(f"Scrape [{m}]: title={t}..., H1={h}, headings={n_headings}, internal_links={n_int}, body={body_words}w")
         elif scrape_result.get("error"):
             print(f"Scrape: {scrape_result['error']} (using placeholders)")
 
@@ -349,6 +352,19 @@ def main():
         except Exception as e:
             print(f"Ahrefs competitive analysis: {e} (skipping)")
 
+    # Ahrefs top pages on domain (for inbound internal linking with real URLs)
+    domain_pages = []
+    if not args.no_competitor:
+        try:
+            domain = urlparse(url).netloc.replace("www.", "")
+            domain_pages = get_top_pages(domain, country=args.country, limit=30)
+            if domain_pages:
+                print(f"Ahrefs: {len(domain_pages)} top pages fetched for inbound linking")
+            else:
+                print("Ahrefs: Top pages not available (inbound linking will use scraped data only)")
+        except Exception as e:
+            print(f"Ahrefs top pages: {e} (skipping)")
+
     brief = None
     if not args.no_gemini:
         report_result = generate_full_seo_report(
@@ -363,6 +379,7 @@ def main():
             client_name=args.client,
             keyword_msv_context=keyword_msv_context,
             competitor_context=competitor_context,
+            domain_pages=domain_pages,
         )
         if report_result.get("success") and report_result.get("report"):
             header = [

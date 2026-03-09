@@ -306,6 +306,59 @@ def _get_organic_traffic(domain: str, api_key: str) -> dict:
     return {"organic_traffic": None, "organic_keywords": None}
 
 
+def get_top_pages(domain: str, country: str = "us", limit: int = 30) -> list:
+    """Fetch top organic pages on a domain from Ahrefs site-explorer/top-pages.
+
+    Returns list of dicts with 'url', 'traffic', 'title' for each page.
+    Used to provide real domain URLs for inbound internal linking recommendations.
+    """
+    api_key = _get_api_key()
+    if not api_key:
+        return []
+
+    from datetime import datetime, timedelta
+    recent = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+
+    try:
+        resp = requests.get(
+            "https://api.ahrefs.com/v3/site-explorer/top-pages",
+            params={
+                "target": domain,
+                "mode": "domain",
+                "date": recent,
+                "country": country,
+                "limit": limit,
+                "select": "url,traffic,title",
+                "order_by": "traffic:desc",
+            },
+            headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
+            timeout=15,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            pages = data.get("pages", data.get("top_pages", []))
+            if isinstance(pages, list):
+                return [
+                    {
+                        "url": p.get("url", ""),
+                        "traffic": p.get("traffic", 0),
+                        "title": p.get("title", ""),
+                    }
+                    for p in pages
+                    if p.get("url")
+                ]
+            return []
+        elif resp.status_code == 403:
+            print(f"  [top-pages] {domain}: API units exhausted")
+            return []
+        else:
+            print(f"  [top-pages] {domain}: HTTP {resp.status_code} — {resp.text[:200]}")
+            return []
+    except Exception as e:
+        print(f"  [top-pages] {domain}: {e}")
+        return []
+
+
 def _enrich_serp_with_backlinks(serp_results: list, api_key: str, skip_dr: bool = False) -> list:
     """Enrich SERP results with domain-level backlinks, referring domains, DR, and organic traffic.
 
@@ -430,16 +483,44 @@ def _fetch_serp_for_keyword(
     if isinstance(raw_items, dict):
         raw_items = [raw_items]
 
-    # Filter: only organic results (skip AI overview, PAA, sitelinks, etc.)
+    # Separate organic results, PAA questions, AI overview, and featured snippets
     results = []
+    paa_questions = []
+    serp_features = []  # AI overview, featured snippets, etc.
     seen_domains = set()
     for item in raw_items:
         url = item.get("url")
+        item_type = item.get("type", [])
+        type_list = item_type if isinstance(item_type, list) else [item_type]
+
+        # Extract People Also Ask questions
+        if "question" in type_list:
+            q_title = item.get("title", "").strip()
+            if q_title:
+                paa_questions.append(q_title)
+            continue
+
+        # Capture AI overview and featured snippet data for AEO/GEO analysis
+        if "ai_overview" in type_list:
+            serp_features.append({
+                "type": "ai_overview",
+                "title": item.get("title", "").strip(),
+                "url": url or "",
+            })
+            continue
+
+        if "featured_snippet" in type_list:
+            serp_features.append({
+                "type": "featured_snippet",
+                "title": item.get("title", "").strip(),
+                "url": url or "",
+            })
+            continue
+
         if not url:
             continue
 
         # Only include organic results
-        item_type = item.get("type", [])
         if isinstance(item_type, list):
             if "organic" not in item_type:
                 continue
@@ -469,7 +550,7 @@ def _fetch_serp_for_keyword(
         if len(results) >= limit:
             break
 
-    return {"success": True, "error": None, "serp_results": results, "keyword_used": keyword}
+    return {"success": True, "error": None, "serp_results": results, "paa_questions": paa_questions, "serp_features": serp_features, "keyword_used": keyword}
 
 
 def _broaden_keyword(keyword: str) -> Optional[str]:
@@ -524,9 +605,17 @@ def _search_google_serper(keyword: str, country: str = "us", limit: int = 10) ->
                 "domain": domain,
                 "domain_rating": None,
             })
-        return serp
+
+        # Extract People Also Ask from Serper response
+        paa_questions = []
+        for paa_item in data.get("peopleAlsoAsk", []):
+            q = paa_item.get("question", "").strip()
+            if q:
+                paa_questions.append(q)
+
+        return serp, paa_questions
     except Exception:
-        return []
+        return [], []
 
 
 def _search_serp_via_ddgs(keyword: str, limit: int = 10) -> list:
@@ -590,13 +679,18 @@ def get_serp_overview(
         return {"success": True, "error": None, "serp_results": [], "keyword_used": keyword, "broadened": False, "source": None}
 
     try:
+        all_paa = []
+
         # 1. Serper.dev — actual live Google results (best source)
-        google_results = _search_google_serper(keyword, country, limit)
+        google_results, serper_paa = _search_google_serper(keyword, country, limit)
+        if serper_paa:
+            all_paa.extend(serper_paa)
         if google_results:
             return {
                 "success": True,
                 "error": None,
                 "serp_results": google_results,
+                "paa_questions": all_paa,
                 "keyword_used": keyword,
                 "broadened": False,
                 "source": "google",
@@ -608,6 +702,9 @@ def get_serp_overview(
             if result.get("serp_results"):
                 result["broadened"] = False
                 result["source"] = "ahrefs"
+                # Merge any PAA from Ahrefs
+                all_paa.extend(result.get("paa_questions", []))
+                result["paa_questions"] = all_paa
                 return result
 
         # 3. DuckDuckGo for exact keyword
@@ -617,6 +714,7 @@ def get_serp_overview(
                 "success": True,
                 "error": None,
                 "serp_results": ddgs_results,
+                "paa_questions": all_paa,
                 "keyword_used": keyword,
                 "broadened": False,
                 "source": "ddgs",
@@ -631,12 +729,14 @@ def get_serp_overview(
                     result2["broadened"] = True
                     result2["original_keyword"] = keyword
                     result2["source"] = "ahrefs"
+                    all_paa.extend(result2.get("paa_questions", []))
+                    result2["paa_questions"] = all_paa
                     return result2
 
         # Nothing worked
-        return {"success": False, "error": "No SERP data available", "serp_results": [], "keyword_used": keyword, "broadened": False, "source": None}
+        return {"success": False, "error": "No SERP data available", "serp_results": [], "paa_questions": all_paa, "keyword_used": keyword, "broadened": False, "source": None}
     except Exception as e:
-        return {"success": False, "error": str(e), "serp_results": [], "keyword_used": keyword, "broadened": False, "source": None}
+        return {"success": False, "error": str(e), "serp_results": [], "paa_questions": [], "keyword_used": keyword, "broadened": False, "source": None}
 
 
 def get_organic_competitors(
@@ -716,7 +816,7 @@ def _format_competitive_context(data: dict) -> str:
     target_word_count = data.get("target_word_count")
 
     if not kw_data and target_dr is None and not serp_competitors:
-        return "**Competitive Analysis Data (Ahrefs):** Not available (API error or no data)."
+        return "**Competitive Analysis Data (Ahrefs):** Not available for this keyword. Analysis should be based on scraped page content only."
 
     lines = ["**Competitive Analysis Data (from Ahrefs):**"]
 
@@ -854,9 +954,69 @@ def _format_competitive_context(data: dict) -> str:
                 for c in sorted_by_wc:
                     lines.append(f"  - #{c.get('position','?')} {c['domain']}: {c['word_count']:,} words")
 
+        # --- Competitor Heading Gap Analysis ---
+        all_comp_headings = []
+        for comp in serp_competitors:
+            for h in comp.get("competitor_headings", []):
+                all_comp_headings.append(h)
+        if all_comp_headings:
+            lines.append("")
+            lines.append("**Competitor Headings (for gap analysis — compare against target page headings):**")
+            # Deduplicate by normalized text, keep heading level
+            seen_normalized = set()
+            unique_headings = []
+            for h in all_comp_headings:
+                norm = h.lower().strip()
+                if norm not in seen_normalized:
+                    seen_normalized.add(norm)
+                    unique_headings.append(h)
+            for h in unique_headings[:60]:
+                lines.append(f"- {h}")
+
+        # --- Rich Content on Competitor Pages ---
+        comp_rich = {}
+        for comp in serp_competitors:
+            rc = comp.get("rich_content", {})
+            for key, count in rc.items():
+                if count and count > 0:
+                    comp_rich[key] = comp_rich.get(key, 0) + 1  # Number of competitors with this element
+        if comp_rich:
+            lines.append("")
+            lines.append("**Rich Content Found on Competitor Pages:**")
+            labels = {"tables": "Tables", "figures": "Figures", "images": "Images",
+                      "iframes": "Embedded content (iframes)", "canvas": "Canvas charts",
+                      "svg": "SVG graphics", "videos": "Videos"}
+            for key, num_comps in sorted(comp_rich.items(), key=lambda x: x[1], reverse=True):
+                label = labels.get(key, key)
+                lines.append(f"- **{label}:** found on {num_comps}/{len(serp_competitors)} competitor pages")
+
+        # --- People Also Ask ---
+        paa_questions = data.get("paa_questions", [])
+        if paa_questions:
+            lines.append("")
+            lines.append("**People Also Ask (from SERP):**")
+            for q in paa_questions[:10]:
+                lines.append(f"- {q}")
+
+        # --- SERP Features (AI Overview, Featured Snippets) — for AEO/GEO analysis ---
+        serp_features = data.get("serp_features", [])
+        if serp_features:
+            lines.append("")
+            lines.append("**SERP Features Detected (real data for AEO/GEO analysis):**")
+            for feat in serp_features:
+                feat_type = feat.get("type", "unknown").replace("_", " ").title()
+                feat_title = feat.get("title", "")
+                feat_url = feat.get("url", "")
+                if feat_title and feat_url:
+                    lines.append(f"- **{feat_type}:** \"{feat_title}\" (source: {feat_url})")
+                elif feat_title:
+                    lines.append(f"- **{feat_type}:** \"{feat_title}\"")
+                else:
+                    lines.append(f"- **{feat_type}** detected for this keyword")
+
     elif data.get("serp_success") is False:
         lines.append("")
-        lines.append("**SERP Competitors:** Could not fetch (API error). Competitive comparison unavailable.")
+        lines.append("**SERP Competitors:** Data not available for this keyword. Base competitive analysis on scraped page content only.")
     else:
         # SERP succeeded but returned empty — explicitly tell Gemini
         lines.append("")
@@ -942,23 +1102,35 @@ def _format_competitive_context(data: dict) -> str:
     return "\n".join(lines)
 
 
-def _get_word_count(url: str, timeout: int = 15) -> Optional[int]:
-    """Fetch word count for a URL. Uses page_scraper (with Playwright fallback) for robustness."""
+def _scrape_competitor_content(url: str, timeout: int = 15) -> dict:
+    """Scrape competitor page for word count, headings, and rich content detection."""
     try:
         from app.page_scraper import scrape_page
         result = scrape_page(url, timeout=timeout)
-        if result.get("success") and result.get("word_count", 0) > 0:
-            return result["word_count"]
+        if result.get("success"):
+            return {
+                "word_count": result.get("word_count", 0) or None,
+                "headings": result.get("headings", []),
+                "rich_content": result.get("rich_content", {}),
+            }
     except Exception:
         pass
-    return None
+    return {"word_count": None, "headings": [], "rich_content": {}}
 
 
-def _enrich_serp_with_word_counts(serp_results: list) -> list:
-    """Add word counts to SERP results by scraping each competitor URL."""
+def _enrich_serp_with_content(serp_results: list) -> list:
+    """Enrich SERP results with word counts, headings, and rich content from each competitor."""
     for entry in serp_results:
         url = entry.get("url", "")
-        entry["word_count"] = _get_word_count(url) if url else None
+        if url:
+            data = _scrape_competitor_content(url)
+            entry["word_count"] = data["word_count"]
+            entry["competitor_headings"] = data["headings"]
+            entry["rich_content"] = data["rich_content"]
+        else:
+            entry["word_count"] = None
+            entry["competitor_headings"] = []
+            entry["rich_content"] = {}
     return serp_results
 
 
@@ -1017,9 +1189,9 @@ def get_competitive_analysis(
             serp_result["serp_results"], api_key, skip_dr=skip_dr
         )
 
-    # Enrich SERP results with word counts from competitor pages
+    # Enrich SERP results with word counts, headings, and rich content from competitor pages
     if serp_result.get("serp_results"):
-        serp_result["serp_results"] = _enrich_serp_with_word_counts(
+        serp_result["serp_results"] = _enrich_serp_with_content(
             serp_result["serp_results"]
         )
 
@@ -1040,6 +1212,8 @@ def get_competitive_analysis(
         "serp_source": serp_result.get("source", "ahrefs"),
         "keyword_used": serp_result.get("keyword_used", keyword),
         "original_keyword": serp_result.get("original_keyword", keyword),
+        "paa_questions": serp_result.get("paa_questions", []),
+        "serp_features": serp_result.get("serp_features", []),
         "organic_competitors": organic_result.get("competitors", []),
         "organic_competitors_success": organic_result.get("success", False),
         "keyword": keyword,

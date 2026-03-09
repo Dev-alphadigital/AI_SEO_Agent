@@ -1,17 +1,20 @@
 """
-Page scraper for SEO briefs — fetches metadata, headings, and body text.
+Page scraper for SEO briefs — fetches metadata, headings, body text, links, and rich content.
 
 Two-tier approach:
 1. requests (fast) — works for most sites
 2. Playwright fallback — for bot-blocked sites (Tesla, Nike, Goldman Sachs, etc.)
 
 Used for:
-- Current State (title, meta, H1, headings)
+- Current State (title, meta, H1, full heading hierarchy, body text)
 - Issues to Fix (no H1, duplicate titles, thin content)
+- Internal/external link extraction
+- Rich content detection (tables, figures, images, charts)
 """
 
 import re
 from typing import Optional, Tuple
+from urllib.parse import urlparse, urljoin
 
 # Realistic browser headers (sometimes helps avoid blocks)
 BROWSER_HEADERS = {
@@ -40,8 +43,11 @@ except ImportError:
     HAS_PLAYWRIGHT = False
 
 
-def _parse_html(html: str) -> dict:
-    """Parse HTML and extract SEO metadata. Shared by requests and Playwright."""
+def _parse_html(html: str, source_url: str = "") -> dict:
+    """Parse HTML and extract SEO metadata, body text, links, and rich content.
+
+    Shared by requests and Playwright.
+    """
     soup = BeautifulSoup(html, "html.parser")
 
     title_tag = soup.find("title")
@@ -55,18 +61,58 @@ def _parse_html(html: str) -> dict:
     h1_tag = soup.find("h1")
     h1 = (h1_tag.get_text(strip=True) or "").strip() if h1_tag else None
 
+    # Extract ALL headings H1-H6 (classified by level)
     headings = []
-    for tag in soup.find_all(["h1", "h2", "h3"]):
+    for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
         text = (tag.get_text(strip=True) or "").strip()
         if text:
             headings.append(f"{tag.name}: {text}")
 
-    for tag in soup(["script", "style"]):
+    # Extract links (internal vs external) before removing scripts/styles
+    internal_links = []
+    external_links = []
+    source_domain = ""
+    if source_url:
+        parsed_source = urlparse(source_url)
+        source_domain = (parsed_source.netloc or "").replace("www.", "").lower()
+
+    for a_tag in soup.find_all("a", href=True):
+        href = a_tag["href"].strip()
+        anchor = (a_tag.get_text(strip=True) or "").strip()
+        if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
+            continue
+        # Resolve relative URLs
+        full_url = urljoin(source_url, href) if source_url else href
+        parsed_href = urlparse(full_url)
+        href_domain = (parsed_href.netloc or "").replace("www.", "").lower()
+
+        link_entry = {"anchor": anchor[:100], "url": full_url}
+        if source_domain and href_domain == source_domain:
+            internal_links.append(link_entry)
+        elif href_domain:
+            external_links.append(link_entry)
+
+    # Detect rich content elements before decomposing
+    rich_content = {
+        "tables": len(soup.find_all("table")),
+        "figures": len(soup.find_all("figure")),
+        "images": len(soup.find_all("img")),
+        "iframes": len(soup.find_all("iframe")),
+        "canvas": len(soup.find_all("canvas")),
+        "svg": len(soup.find_all("svg")),
+        "videos": len(soup.find_all("video")),
+    }
+
+    # Extract body text (remove scripts/styles first)
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
         tag.decompose()
     body = soup.find("body")
     text = body.get_text(separator=" ", strip=True) if body else ""
     words = re.findall(r"\b\w+\b", text, re.UNICODE)
     word_count = len(words)
+
+    # Full body text for Gemini context (content analysis needs complete page)
+    body_text = " ".join(words[:15000]) if words else ""
 
     issues = []
     if not h1 or not h1.strip():
@@ -84,6 +130,10 @@ def _parse_html(html: str) -> dict:
         "h1": h1,
         "headings": headings,
         "word_count": word_count,
+        "body_text": body_text,
+        "internal_links": internal_links[:50],  # Cap at 50 to avoid bloat
+        "external_links": external_links[:30],
+        "rich_content": rich_content,
         "issues": issues,
     }
 
@@ -175,8 +225,23 @@ def scrape_page(url: str, timeout: int = 20, force_playwright: bool = False) -> 
                 last_error = pw_err or last_error
 
     if html:
-        result = _parse_html(html)
+        result = _parse_html(html, source_url=url)
         result["method"] = method
+
+        # Retry with Playwright if headings look suspiciously sparse for a content-heavy page
+        # (likely JS-rendered headings that requests can't see)
+        if (result.get("success")
+                and len(result.get("headings", [])) < 3
+                and result.get("word_count", 0) > 500
+                and HAS_PLAYWRIGHT
+                and method != "playwright"):
+            pw_html, pw_err = _scrape_with_playwright(url, timeout)
+            if pw_html:
+                pw_result = _parse_html(pw_html, source_url=url)
+                if len(pw_result.get("headings", [])) > len(result.get("headings", [])):
+                    pw_result["method"] = "playwright"
+                    return pw_result
+
         return result
 
     return {
@@ -187,6 +252,10 @@ def scrape_page(url: str, timeout: int = 20, force_playwright: bool = False) -> 
         "h1": None,
         "headings": [],
         "word_count": 0,
+        "body_text": "",
+        "internal_links": [],
+        "external_links": [],
+        "rich_content": {},
         "issues": [],
         "method": None,
     }

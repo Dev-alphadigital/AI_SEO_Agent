@@ -55,6 +55,8 @@ def format_client_profile_for_prompt(profile: dict) -> str:
         parts.append(f"- **Value proposition:** {profile['value_proposition']}")
     if profile.get("brand_positioning"):
         parts.append(f"- **Brand positioning:** {profile['brand_positioning']}")
+    if profile.get("specific_instructions"):
+        parts.append(f"- **Specific content instructions (MUST FOLLOW):** {profile['specific_instructions']}")
     return "\n".join(parts) if parts else ""
 
 
