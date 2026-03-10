@@ -32,14 +32,24 @@ def _load_profiles() -> dict:
 def get_client_profile(client_name: str) -> Optional[dict]:
     """
     Get client profile by name. Case-insensitive match.
-    Returns None if not found.
+    If not found in saved profiles, returns a minimal auto-generated profile
+    so reports always include a client section when --client is used.
     """
     profiles = _load_profiles()
     name_lower = client_name.strip().lower()
     for key, value in profiles.items():
         if key.lower() == name_lower:
             return value
-    return None
+    # Auto-generate minimal profile for unknown clients so the report
+    # still includes a client profile section (Gemini will infer details
+    # from the scraped page content and SERP data).
+    return {
+        "target_audience": "(infer from page content and SERP data)",
+        "about_the_brand": "(infer from page content and SERP data)",
+        "values": "(infer from page content and SERP data)",
+        "value_proposition": "(infer from page content and SERP data)",
+        "brand_positioning": "(infer from page content and SERP data)",
+    }
 
 
 def format_client_profile_for_prompt(profile: dict) -> str:

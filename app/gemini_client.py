@@ -211,9 +211,27 @@ def generate_full_seo_report(
 
 **CRITICAL — NON-NEGOTIABLE:** The ENTIRE report must be tailored to this client profile. Every recommendation, every heading suggestion, every meta description, every internal linking idea — ALL must align with this client's target audience, brand positioning, values, and voice. A generic report is UNACCEPTABLE. The reader must be able to tell which client this report is for just by reading any section.
 
+**If any profile field says "(infer from page content and SERP data)", you MUST infer a real, specific value from the scraped page content, SERP competitors, and keyword context.** Replace every "(infer...)" placeholder with a concrete description (e.g., target audience, brand positioning, values) based on what you learn from the data. Never output "(infer from page content and SERP data)" in the final report.
+
 **If "Specific content instructions" are listed above, you MUST address them explicitly in the Additional Recommendations section.** These are direct client requirements and take priority."""
         client_report_instruction = f"""
-1. **Client profile** — MANDATORY WHEN CLIENT PROVIDED. Display the client name, target audience, brand positioning, values, and value proposition. Then state: "All recommendations in this report are tailored to this client profile." This section comes FIRST (before Executive Summary numbering) because client alignment is the #1 priority. If no client profile was provided, omit this section entirely."""
+1. **Client profile** — MANDATORY WHEN CLIENT PROVIDED. Use EXACTLY this format (no bullet points, no dashes):
+
+## Client Profile
+
+**Client:** [Client Name]
+
+**Target audience:** [target audience description]
+
+**Brand positioning:** [brand positioning description]
+
+**Values:** [comma-separated values]
+
+**Value proposition:** [value proposition description]
+
+All recommendations in this report are tailored to this client profile.
+
+This section comes FIRST (before Executive Summary numbering) because client alignment is the #1 priority. If no client profile was provided, omit this section entirely."""
     else:
         client_section = ""
         client_report_instruction = ""
@@ -262,40 +280,50 @@ Write a full content optimization report in Markdown. You MUST include ALL of th
 
 5. **Keyword Targets (with MSV)** — MANDATORY table: Keyword | MSV (est) | Intent | Placement. Use exact MSV from Ahrefs context. Never invent numbers.
 
-6. **SERP Analysis** — Based on the SERP competitor data, provide a rundown of:
+6. **Optimization Strategy** — THE WHY SECTION. Explain the overall strategic approach for optimizing this page. This must include:
+   - **Primary goal:** What is the main objective for this page? (e.g., "Improve ranking for 'hot desking' from #8 to top 5 by closing content gaps")
+   - **Strategic pillars:** 3-5 numbered strategic pillars that summarize HOW the goal will be achieved. Each pillar should be a short heading followed by 1-2 sentences. Examples: "1. Optimize title tag and meta description to include primary and secondary keywords while communicating value to [target audience]", "2. Expand content depth to match or exceed SERP competitors' coverage of [specific topics]", "3. Add visual content (infographics, comparison tables) to increase engagement and dwell time", "4. Structure content for AI citation and featured snippet capture", "5. Strengthen internal linking to boost page authority and user navigation"
+   - Ground each pillar in specific data from the analysis (SERP patterns, content gaps, keyword data).
+
+7. **SERP Analysis** — Based on the SERP competitor data, provide a rundown of:
    - **a) SERP Observations Summary** — Start with a numbered list of 5-8 key observations from the SERP data. What patterns do you see? What content approaches dominate? What topics are consistently covered? What content formats are common? These must be content-level observations only.
    - **b) General search intent** — What Google thinks users want when searching this keyword/topic. Summarize in 2-3 bullet points.
    - **c) Competitor heading gap analysis** — List the key headers/topics that top SERP pages cover. Specifically highlight which headers/topics our page is MISSING. Also note what content angle competitors take (how they frame the topic). Format as a table: | Competitor Heading Topic | Present on Our Page? | Action Needed |
    - **d) Rich content opportunities** — Based on the "Rich Content Found on Competitor Pages" data, list what rich content (charts, tables, graphs, data visualizations, videos) competitors have that our article lacks. Recommend specific rich content to add with descriptions of what each should contain.
    - **e) People Also Ask** — List all PAA questions from context with brief suggested answers (2-3 sentences each). If none available, generate 3-5 relevant FAQ questions based on the keyword and content.
    - **f) Actionable content changes from SERP** — Numbered list of specific content changes to make on our primary URL based on the SERP analysis above. Each item must reference a specific section, heading, or content gap. No generic advice.
-   - **SERP Competitor Overview table** — If data provided: | # | Domain | DR | Traffic | Word Count | Content Approach |. The "Content Approach" column should describe what content/topics/structure each competitor uses — NOT why they rank from an SEO authority perspective.
+   - **SERP Competitor Overview table** — If data provided: | # | Domain | DR | Backlinks | Ref. Domains | Traffic | Word Count | Content Approach |. Include backlink and referring domain counts if available in the data. The "Content Approach" column should describe what content/topics/structure each competitor uses — NOT why they rank from an SEO authority perspective.
    - **Keyword Competition Table** — If data provided: Keyword | Search Volume | Difficulty | CPC | Traffic Potential | Global Volume.
-   CRITICAL: Do NOT include any off-page recommendations like "build more backlinks", "improve domain authority", or "pursue link building." Content-level observations ONLY.
+   - **Competitive Gap Analysis** — MANDATORY subsection within SERP Analysis. Must include:
+     - **DR gap:** Calculate the difference between the target page's DR and the SERP average DR. State both numbers.
+     - **Content length comparison:** Compare target page word count vs SERP average and longest competitor. State: "Your page: X words | SERP average: Y words | Longest: Z words (domain.com)".
+     - **Weakest competitors:** Identify 2-3 competitors in the SERP that are realistic targets to outrank based on lower DR, thinner content, or fewer backlinks. Explain WHY each is beatable from a content perspective.
+     - **Content positioning opportunities:** Based on the gap analysis, what specific content angles or depth improvements would help close the gap? Be specific — reference competitor topics, word counts, and content structures.
+   CRITICAL: Do NOT include any off-page recommendations like "build more backlinks", "improve domain authority", or "pursue link building." Content-level observations ONLY. Frame all competitive gaps in terms of CONTENT improvements.
 
-7. **Recommendations** — Concrete, actionable content changes for the primary page:
+8. **Recommendations** — Concrete, actionable content changes for the primary page:
    - **Title tag alternatives** — Provide **2-5 alternative title tags**, each 50–60 chars. Each must include the primary keyword. Each alternative must be meaningfully different (not just word order swaps). If the current title is already strong, the first option can be "No Changes" with a rationale explaining why. Include a table: | # | Recommended Title | Chars | Rationale |
    - **Meta description alternatives** — Provide **2-5 alternative meta descriptions**, each 150–160 chars. Each must be meaningfully different. If the current meta is already strong, the first option can be "No Changes". Include a table: | # | Recommended Meta Description | Chars | Rationale |
    - **Heading comparison table** — MANDATORY format: | Level (H1/H2/H3) | Current Heading | Recommended Heading | Rationale |. Include ALL headings from the scraped page. Recommended headings must be concise (max 8-10 words) and direct — no creative marketing flair. If a heading is already good, write "Keep as is" in the Recommended column. If a heading should be removed, write "Remove" with rationale. Always classify the heading level (H1, H2, H3). The Rationale column must reference a specific finding (competitor topic, SERP pattern, content gap, or keyword data) — never write generic reasons like "improved clarity" or "better keyword targeting".
 
-8. **Content Reoptimization** — Specific content changes needed on the page:
+9. **Content Reoptimization** — Specific content changes needed on the page:
    - Which existing sections need new or revised H2/H3 headings — for each, state the recommended heading (max 8-10 words) AND explain what specific content gap it fills or what SERP/competitor data supports the change (e.g. "5 of 10 SERP competitors cover this topic" or "addresses PAA question about X")
    - Visual content recommendations: specific charts, graphs, tables, or infographics to add — describe exactly what data each visual should show and where on the page it should go
    - Content to add, remove, or restructure — be specific about which sections, reference them by heading name
    - Recommended new headings with reasoning grounded in specific SERP findings or competitor content patterns (never generic reasoning like "for better structure")
 
-9. **Internal Linking** — Bidirectional internal linking analysis. MANDATORY table format: | Direction | Anchor Text | URL | Rationale |
+10. **Internal Linking** — Bidirectional internal linking analysis. MANDATORY table format: | Direction | Anchor Text | URL | Rationale |
    - **Outbound (from this page to other internal pages):** List internal links already on the page (from scraped data). Recommend 3-5 additional internal links to add — use specific anchor text and target URLs from the same domain (based on the internal links found during scraping and the "Other pages on this domain" list if provided).
    - **Inbound (from other pages to this page):** Recommend 3-5 pages on the same domain that should link TO this page. You MUST use real URLs from the "Other pages on this domain" data if provided — do NOT use placeholder URLs. For each, provide the source URL, specific anchor text, and rationale for why that page should link here.
 
-10. **FAQs** — Create an FAQ section for the article:
+11. **FAQs** — Create an FAQ section for the article:
     - Use "People Also Ask" questions from SERP data if available.
     - If PAA questions are not available or insufficient, create 3-5 catered FAQ questions relevant to the keyword and content intent.
     - For each FAQ, provide the question AND a brief suggested answer (2-3 sentences).
 
-11. **Key Takeaways** — List exactly 5-7 key takeaways. Each must be a specific content finding from the analysis (not generic SEO advice). Format as actionable bullet points that reference specific sections, headings, or content gaps identified in this report.
+12. **Key Takeaways** — List exactly 5-7 key takeaways. Each must be a specific content finding from the analysis (not generic SEO advice). Format as actionable bullet points that reference specific sections, headings, or content gaps identified in this report.
 
-12. **Additional Recommendations** — THE MOST IMPORTANT SECTION. Numbered list of specific content changes to implement on the primary URL. Each item MUST:
+13. **Additional Recommendations** — THE MOST IMPORTANT SECTION. Numbered list of specific content changes to implement on the primary URL. Each item MUST:
     - Specify WHAT to change (heading, paragraph, section, image, table, etc.)
     - Specify WHERE on the page (reference the section by heading name)
     - Explain WHY (what gap it fills, what SERP data supports it)
@@ -303,14 +331,14 @@ Write a full content optimization report in Markdown. You MUST include ALL of th
     - Examples of GOOD items: "Add a comparison table under the 'Types of X' section showing...", "Replace the intro paragraph with...", "Remove the outdated statistics in the 'Benefits' section and replace with...", "Add a mid-post CTA after the 'Benefits' section linking to the product demo page"
     - EXPLICITLY FORBIDDEN: Do NOT recommend creating downloadable checklists, separate landing pages, new blog posts, glossary pages, or any standalone assets. Do NOT recommend social media promotion, LinkedIn posts, PR campaigns, email marketing, or distribution strategies. Focus ONLY on editing the existing page content.
 
-13. **AEO/GEO Recommendations** — Recommendations for Answer Engine Optimization and Generative Engine Optimization (content-level only). Use the "SERP Features Detected" data if provided:
+14. **AEO/GEO Recommendations** — Recommendations for Answer Engine Optimization and Generative Engine Optimization (content-level only). Use the "SERP Features Detected" data if provided. This section MUST include concrete tables and figures — not just prose:
     - **Current AI/Featured Snippet presence:** If AI Overview or Featured Snippet data was detected in the SERP, describe what Google is currently showing (the title, source URL, and what content is being cited). If no SERP features detected, state that.
     - **How to win/maintain the featured snippet or AI citation:** Based on the detected SERP features, what specific content structure, formatting, or additions would help this page get cited? Reference the actual snippet content if available.
-    - How to structure the page's content for AI citation (heading structure, answer formatting, concise definition patterns at the top of sections)
-    - What charts/graphs/visual content to add that AI engines prefer to reference — be specific about what each should show
-    - Content formatting changes (lists, tables, concise definitions, "What is X?" patterns) that improve AI extractability
+    - **AI Extractability Audit table** — MANDATORY. Create a table: | Element | Current State | Recommended Change | Priority |. Audit these elements: Definition at top of page, FAQ schema/section, Structured lists, Data tables, Concise answer paragraphs (<50 words), "What is X?" headings, Comparison tables, Statistics/data points. For each, assess whether it exists on the page and what to add/change.
+    - **Recommended Visual Content for AI Citation table** — MANDATORY. Create a table: | Visual Type | Description | Placement | Why AI Engines Prefer This |. List 3-5 specific charts, graphs, tables, or infographics with exact descriptions of what data each should contain, where on the page it should go, and why AI engines are likely to cite it.
+    - **Content formatting changes** — Specific changes to improve AI extractability: lists, tables, concise definitions, "What is X?" patterns.
 
-14. **Quick Reference** — URL | Primary keyword | Priorities | Heading casing (if applicable).
+15. **Quick Reference** — URL | Primary keyword | Priorities | Heading casing (if applicable).
 
 Rules:
 - **#1 RULE — Focus on the primary URL.** Every recommendation must be about improving THIS specific page's content.

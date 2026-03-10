@@ -96,7 +96,7 @@ def get_keyword_volumes(
                     "select": "keyword,volume",
                 },
                 headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-                timeout=15,
+                timeout=20,
             )
             if resp.status_code == 200:
                 data = resp.json()
@@ -206,7 +206,7 @@ def get_domain_rating(
             "https://api.ahrefs.com/v3/site-explorer/domain-rating",
             params={"target": domain, "mode": mode, "date": recent},
             headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-            timeout=15,
+            timeout=20,
         )
         if resp.status_code != 200:
             return {"success": False, "error": f"Ahrefs DR API {resp.status_code}", "domain_rating": None, "ahrefs_rank": None}
@@ -236,7 +236,7 @@ def _get_backlinks_stats(domain: str, api_key: str) -> dict:
             "https://api.ahrefs.com/v3/site-explorer/backlinks-stats",
             params={"target": domain, "mode": "domain", "date": recent},
             headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-            timeout=15,
+            timeout=20,
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -277,7 +277,7 @@ def _get_organic_traffic(domain: str, api_key: str) -> dict:
                 "select": "org_traffic,org_keywords",
             },
             headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-            timeout=15,
+            timeout=20,
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -328,11 +328,11 @@ def get_top_pages(domain: str, country: str = "us", limit: int = 30) -> list:
                 "date": recent,
                 "country": country,
                 "limit": limit,
-                "select": "url,traffic,title",
-                "order_by": "traffic:desc",
+                "select": "raw_url,top_keyword_best_position_title,keywords,top_keyword_volume",
+                "order_by": "top_keyword_volume:desc",
             },
             headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-            timeout=15,
+            timeout=20,
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -340,12 +340,13 @@ def get_top_pages(domain: str, country: str = "us", limit: int = 30) -> list:
             if isinstance(pages, list):
                 return [
                     {
-                        "url": p.get("url", ""),
-                        "traffic": p.get("traffic", 0),
-                        "title": p.get("title", ""),
+                        "url": p.get("raw_url", p.get("url", "")),
+                        "traffic": p.get("top_keyword_volume", 0),
+                        "title": p.get("top_keyword_best_position_title", ""),
+                        "keywords": p.get("keywords", 0),
                     }
                     for p in pages
-                    if p.get("url")
+                    if p.get("raw_url") or p.get("url")
                 ]
             return []
         elif resp.status_code == 403:
@@ -495,7 +496,7 @@ def _fetch_serp_for_keyword(
 
         # Extract People Also Ask questions
         if "question" in type_list:
-            q_title = item.get("title", "").strip()
+            q_title = (item.get("title") or "").strip()
             if q_title:
                 paa_questions.append(q_title)
             continue
@@ -504,7 +505,7 @@ def _fetch_serp_for_keyword(
         if "ai_overview" in type_list:
             serp_features.append({
                 "type": "ai_overview",
-                "title": item.get("title", "").strip(),
+                "title": (item.get("title") or "").strip(),
                 "url": url or "",
             })
             continue
@@ -512,7 +513,7 @@ def _fetch_serp_for_keyword(
         if "featured_snippet" in type_list:
             serp_features.append({
                 "type": "featured_snippet",
-                "title": item.get("title", "").strip(),
+                "title": (item.get("title") or "").strip(),
                 "url": url or "",
             })
             continue
@@ -542,7 +543,7 @@ def _fetch_serp_for_keyword(
         results.append({
             "position": len(results) + 1,
             "url": url,
-            "title": item.get("title", ""),
+            "title": item.get("title") or "",
             "domain": domain,
             "domain_rating": dr if dr else None,
             # backlinks, referring_domains, organic_traffic filled by enrichment
@@ -573,20 +574,20 @@ def _search_google_serper(keyword: str, country: str = "us", limit: int = 10) ->
     """
     serper_key = os.environ.get("SERPER_API_KEY")
     if not serper_key or not serper_key.strip():
-        return []
+        return [], []
 
     if not HAS_REQUESTS:
-        return []
+        return [], []
 
     try:
         resp = requests.post(
             "https://google.serper.dev/search",
             json={"q": keyword.strip(), "gl": country, "hl": "en", "num": limit},
             headers={"X-API-KEY": serper_key, "Content-Type": "application/json"},
-            timeout=15,
+            timeout=20,
         )
         if resp.status_code != 200:
-            return []
+            return [], []
 
         data = resp.json()
         organic = data.get("organic", [])
