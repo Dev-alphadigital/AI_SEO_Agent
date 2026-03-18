@@ -385,40 +385,28 @@ def _render_body(doc, body: str):
 
 
 def _add_heading(doc, text: str, level: int):
-    """Add a styled heading using Word's built-in Heading styles for navigation pane support."""
+    """Add a styled heading."""
     # Clean markdown formatting from heading text
     clean = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
     clean = re.sub(r'\*(.*?)\*', r'\1', clean)
 
-    # Use built-in Heading styles so the navigation pane picks them up
-    heading_level = min(level, 4)  # Word supports Heading 1-9
-    p = doc.add_heading(clean, level=heading_level)
+    p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(14 if level <= 2 else 8)
     p.paragraph_format.space_after = Pt(4)
     p.paragraph_format.keep_with_next = True
 
-    # Override the built-in heading style with our custom look
-    for run in p.runs:
-        run.font.name = "Calibri"
-        if level == 1:
-            run.bold = True
-            run.font.size = Pt(18)
-            run.font.color.rgb = BLUE_DARK
-        elif level == 2:
-            run.bold = True
-            run.font.size = Pt(14)
-            run.font.color.rgb = BLUE_DARK
-        elif level == 3:
-            run.bold = True
-            run.font.size = Pt(12)
-            run.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
-        elif level == 4:
-            run.bold = True
-            run.font.size = Pt(10.5)
-            run.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
+    run = p.add_run(clean)
+    run.font.name = "Calibri"
 
-    # Add bottom border for H2
-    if level == 2:
+    if level == 1:
+        run.bold = True
+        run.font.size = Pt(18)
+        run.font.color.rgb = BLUE_DARK
+    elif level == 2:
+        run.bold = True
+        run.font.size = Pt(14)
+        run.font.color.rgb = BLUE_DARK
+        # Add bottom border for H2
         pPr = p._p.get_or_add_pPr()
         pBdr = parse_xml(
             f'<w:pBdr {nsdecls("w")}>'
@@ -426,6 +414,14 @@ def _add_heading(doc, text: str, level: int):
             f'</w:pBdr>'
         )
         pPr.append(pBdr)
+    elif level == 3:
+        run.bold = True
+        run.font.size = Pt(12)
+        run.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
+    elif level == 4:
+        run.bold = True
+        run.font.size = Pt(10.5)
+        run.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
 
 
 def _add_paragraph(doc, text: str):

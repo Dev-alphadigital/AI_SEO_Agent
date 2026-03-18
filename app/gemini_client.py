@@ -198,7 +198,7 @@ def generate_full_seo_report(
     )
 
     client_section = ""
-    client_report_instruction = ""
+    client_overview_fields = ""
     if client_profile:
         from app.client_profiles import format_client_profile_for_prompt
         client_text = format_client_profile_for_prompt(client_profile)
@@ -211,30 +211,15 @@ def generate_full_seo_report(
 
 **CRITICAL — NON-NEGOTIABLE:** The ENTIRE report must be tailored to this client profile. Every recommendation, every heading suggestion, every meta description, every internal linking idea — ALL must align with this client's target audience, brand positioning, values, and voice. A generic report is UNACCEPTABLE. The reader must be able to tell which client this report is for just by reading any section.
 
-**If any profile field says "(infer from page content and SERP data)", you MUST infer a real, specific value from the scraped page content, SERP competitors, and keyword context.** Replace every "(infer...)" placeholder with a concrete description (e.g., target audience, brand positioning, values) based on what you learn from the data. Never output "(infer from page content and SERP data)" in the final report.
-
 **If "Specific content instructions" are listed above, you MUST address them explicitly in the Additional Recommendations section.** These are direct client requirements and take priority."""
-        client_report_instruction = f"""
-1. **Client profile** — MANDATORY WHEN CLIENT PROVIDED. Use EXACTLY this format (no bullet points, no dashes):
-
-## Client Profile
-
-**Client:** [Client Name]
-
-**Target audience:** [target audience description]
-
-**Brand positioning:** [brand positioning description]
-
-**Values:** [comma-separated values]
-
-**Value proposition:** [value proposition description]
-
-All recommendations in this report are tailored to this client profile.
-
-This section comes FIRST (before Executive Summary numbering) because client alignment is the #1 priority. If no client profile was provided, omit this section entirely."""
+        client_overview_fields = f"""
+Under **Overview**, include:
+- **Client:** {client_name or 'Unknown'}
+- **Target audience:** from client profile
+Then state: "All recommendations in this report are tailored to this client profile.\""""
     else:
         client_section = ""
-        client_report_instruction = ""
+        client_overview_fields = ""
 
     casing_note = ""
     if heading_casing:
@@ -244,110 +229,290 @@ This section comes FIRST (before Executive Summary numbering) because client ali
         elif c == "sentence":
             casing_note = " Use Sentence case for all suggested headings."
 
-    prompt = f"""You are a content strategist focused ONLY on content optimization. Your scope is limited to what can be changed ON THE PAGE: headings, body copy, metadata, internal links, FAQs, visual content, and content structure.
+    prompt = f"""You are a Senior Enterprise SEO Strategist and Content Optimization Planner.
+Your sole responsibility is to analyze existing content (blogs and landing pages) and produce a prioritized, risk-aware reoptimization plan designed to improve:
+- Search visibility & rankings
+- Organic traffic quality
+- Alignment with modern search systems (AI Overviews, E-E-A-T, Search Intent)
 
-**Your role:** Analyze the target page content and SERP data below, then produce a comprehensive content optimization report focused on the PRIMARY URL. Every recommendation must be about improving THIS page's content. Summarize WHY each recommendation matters.
+You do NOT write final content. You only plan, prioritize, and justify changes.
+You are analytical, conservative, and data-driven.
+If the risk of reoptimization outweighs the upside, you must explicitly recommend no major changes.
 
-**SCOPE BOUNDARY — CRITICAL:** Do NOT recommend off-page strategies. Never suggest backlink building, domain authority improvement, link outreach, PR campaigns, guest posting, or any off-page SEO strategy. SERP competitor data is used to understand what content to create and how to structure it — not to suggest SEO campaigns. If competitors rank due to higher DA or more backlinks, do NOT mention that as a recommendation — focus only on what content changes can close the gap.{client_section}
+**SCOPE BOUNDARY — CRITICAL:** Do NOT recommend off-page strategies. Never suggest backlink building, domain authority improvement, link outreach, PR campaigns, guest posting, or any off-page SEO strategy. SERP competitor data is used to understand what content to create and how to structure it — not to suggest SEO campaigns. Focus only on what content changes can close the gap.{client_section}
+
+## Global Guardrails (Non-Negotiable)
+- Do NOT rewrite or alter: legal disclaimers, regulated claims, definitions demonstrating first-hand expertise, compliance-sensitive language.
+- Do NOT recommend keyword stuffing or forced insertion.
+- Do NOT recommend full rewrites unless performance data strongly supports it.
+- Always favor incremental, intent-aligned improvements.
+- No hallucinations — no fake stats, no "guaranteed #1," no unsupported claims.
+- Use ONLY exact data provided — never invent DR, backlinks, traffic, MSV, or word count numbers. Use "(not available)" if missing.
+- Metadata limits — Title: 50–60 chars (never over 60). Meta description: 150–160 chars (never over 160). Do NOT show character counts in the output.
 
 ## Input data
 {context}
 
-## MANDATORY rules
-- **CONTENT-ONLY SCOPE** — Every recommendation must be about on-page content changes. Never recommend backlink building, domain authority improvement, link outreach, PR campaigns, or any off-page SEO strategy. If you catch yourself writing "build backlinks", "improve domain authority", or "create a link building campaign" — DELETE IT.
-- **No hallucinations** — No fake stats, no "guaranteed #1," no unsupported claims. Ground every recommendation in the data provided.
-- **Tone & client alignment** — If a client profile was provided, tailor the ENTIRE report to it.
-- **Metadata limits** — Title: 50–60 chars (never over 60). Meta description: 150–160 chars (never over 160). Always show character counts in brackets.
-- **Use ONLY exact data** — Never invent DR, backlinks, traffic, MSV, or word count numbers. Use "(not available)" if missing.
-- **Heading recommendations must be direct** — No verbose marketing-speak. Clear, keyword-focused headings. If a current heading is fine, say "Keep as is" instead of inventing a worse alternative.
+## ANALYTICAL WORKFLOW (Internal Processing — Follow These Steps Sequentially)
+
+**STEP 0: Reoptimization Viability Check (Required)**
+Before producing the report, assess risk vs reward:
+- If the page ranks positions 1–5 AND engagement metrics are at or above benchmark, explicitly recommend no structural content changes. Limit recommendations to metadata, internal linking, or SERP alignment tweaks.
+- Proceed with full reoptimization only if justified.
+
+**STEP 1: Current State Analysis (Intent & Performance)**
+- Analyze the existing content body and current primary keyword.
+- Classify the dominant search intent (Informational, Commercial, Navigational) using keyword modifiers and SERP pattern heuristics.
+- Identify the primary cause of underperformance: Intent mismatch, Content depth gap, Structural issues, Metadata misalignment, or Poor internal linking.
+
+**STEP 2: Metadata Evaluation**
+- Evaluate current title tag and meta description against the target keyword strategy.
+- Generate optimized alternatives that include the primary keyword, improve CTR potential, and remain brand-safe and non-sensational.
+
+**STEP 3: Content Reoptimization Plan**
+Analyze using these five lenses:
+1. Content Structure — Identify 3-5 specific H2/H3 headings to add or revise. Each must map to: search intent, identified content gap, or keyword theme.
+2. Visual & Trust Elements — Identify 3 specific asset types that would improve E-E-A-T or engagement (comparison tables, data visualizations, diagrams).
+3. Internal Linking — Identify anchor text → destination URL pairs for contextual placement. Flag missing internal content opportunities.
+4. FAQs — Generate natural user-intent questions aligned to the article topic, incorporating semantic keyword variations.
+5. Key Takeaways — Identify the most critical strategic changes needed.
+
+**STEP 4: Impact Assessment**
+- Assess expected SEO impact (visibility, rankings, AI discoverability).
+- Assess expected behavioral impact (CTR, engagement, conversion).
+
+Use the analysis from Steps 0-4 to populate EVERY section of the output below. Every recommendation must be grounded in specific findings from this analytical process.
 
 ## Your task
-Write a full content optimization report in Markdown. You MUST include ALL of the following sections:
-{client_report_instruction}
-1. **Executive Summary** — Begin with: "As a content strategist, here is my analysis of [URL]..." Then summarize what was found on the page and from the SERP. Explain WHY each major recommendation is being made — ground it in specific content gaps or SERP findings. 2-3 sentences that give context for the entire report.
+Write a content reoptimization brief in Markdown following this EXACT template structure. Do NOT add extra sections. Do NOT reorder sections. Do NOT output labels like "SECTION 1:", "SECTION 2:", "STEP 1:", "STEP 2:" etc. — just use the heading names directly.
+{client_overview_fields}
 
-2. **Notes (form)** — MANDATORY: Display "Form notes (user-provided)" VERBATIM if provided, then explain how incorporated. If "(none provided)", state "*(Not provided / not used)*". Never mix with client profile.
+## Overview
+- **Client:** {client_name or '(not provided)'}
+- **Target URL:** [the target URL]
+- **Primary Objective:** Based on the page's body content, what is this page trying to achieve? What topic does it cover, what angle does it take, and for whom? (This is the page intent analysis — 2-3 sentences.)
+- **Target Audience:** from client profile if provided, otherwise derive from page content.
 
-3. **URL & GSC** — Target URL verification + GSC performance summary (clicks, impressions, avg position, top queries) or "GSC not available."
+---
 
-4. **Current State Analysis** — The most important analytical section. Based on the scraped body content:
-   - **Current metadata:** Exact current title + meta description with character counts.
-   - **Current heading structure:** List EVERY heading from the scraped page with its H-level (H1, H2, H3, H4). Do not summarize or skip any — show the complete hierarchy exactly as scraped.
-   - **Page intent:** Based on the full body content, what is this page trying to achieve? What topic does it cover, what angle does it take, and for whom?
-   - **SERP intent:** Based on SERP competitor data, what does Google think users want when they search this keyword? State this separately, then explicitly compare it to the page's current intent — where do they align and where do they diverge?
-   - **Strengths:** What the page does well from a content perspective.
-   - **Gaps:** What content is missing compared to what SERP competitors cover. Be specific — name the topics, sections, or questions competitors address that this page does not.
+## Executive Summary
+Write a concise executive summary combining SERP intent analysis and SERP observations. This MUST be no more than half a page long. Structure it as flowing paragraphs with bold labels — NOT as a bullet list of headings. Use this format:
 
-5. **Keyword Targets (with MSV)** — MANDATORY table: Keyword | MSV (est) | Intent | Placement. Use exact MSV from Ahrefs context. Never invent numbers.
+**SERP Intent:** Write 2-3 sentences describing what users are looking for when they search this keyword. Include the classified search intent type (Informational/Commercial/Navigational).
 
-6. **Optimization Strategy** — THE WHY SECTION. Explain the overall strategic approach for optimizing this page. This must include:
-   - **Primary goal:** What is the main objective for this page? (e.g., "Improve ranking for 'hot desking' from #8 to top 5 by closing content gaps")
-   - **Strategic pillars:** 3-5 numbered strategic pillars that summarize HOW the goal will be achieved. Each pillar should be a short heading followed by 1-2 sentences. Examples: "1. Optimize title tag and meta description to include primary and secondary keywords while communicating value to [target audience]", "2. Expand content depth to match or exceed SERP competitors' coverage of [specific topics]", "3. Add visual content (infographics, comparison tables) to increase engagement and dwell time", "4. Structure content for AI citation and featured snippet capture", "5. Strengthen internal linking to boost page authority and user navigation"
-   - Ground each pillar in specific data from the analysis (SERP patterns, content gaps, keyword data).
+**Alignment & Strengths:** Write 2-3 sentences about where the current page aligns well with SERP intent. Be specific — reference actual page sections by heading name.
 
-7. **SERP Analysis** — Based on the SERP competitor data, provide a rundown of:
-   - **a) SERP Observations Summary** — Start with a numbered list of 5-8 key observations from the SERP data. What patterns do you see? What content approaches dominate? What topics are consistently covered? What content formats are common? These must be content-level observations only.
-   - **b) General search intent** — What Google thinks users want when searching this keyword/topic. Summarize in 2-3 bullet points.
-   - **c) Competitor heading gap analysis** — List the key headers/topics that top SERP pages cover. Specifically highlight which headers/topics our page is MISSING. Also note what content angle competitors take (how they frame the topic). Format as a table: | Competitor Heading Topic | Present on Our Page? | Action Needed |
-   - **d) Rich content opportunities** — Based on the "Rich Content Found on Competitor Pages" data, list what rich content (charts, tables, graphs, data visualizations, videos) competitors have that our article lacks. Recommend specific rich content to add with descriptions of what each should contain.
-   - **e) People Also Ask** — List all PAA questions from context with brief suggested answers (2-3 sentences each). If none available, generate 3-5 relevant FAQ questions based on the keyword and content.
-   - **f) Actionable content changes from SERP** — Numbered list of specific content changes to make on our primary URL based on the SERP analysis above. Each item must reference a specific section, heading, or content gap. No generic advice.
-   - **SERP Competitor Overview table** — If data provided: | # | Domain | DR | Backlinks | Ref. Domains | Traffic | Word Count | Content Approach |. Include backlink and referring domain counts if available in the data. The "Content Approach" column should describe what content/topics/structure each competitor uses — NOT why they rank from an SEO authority perspective.
-   - **Keyword Competition Table** — If data provided: Keyword | Search Volume | Difficulty | CPC | Traffic Potential | Global Volume.
-   - **Competitive Gap Analysis** — MANDATORY subsection within SERP Analysis. Must include:
-     - **DR gap:** Calculate the difference between the target page's DR and the SERP average DR. State both numbers.
-     - **Content length comparison:** Compare target page word count vs SERP average and longest competitor. State: "Your page: X words | SERP average: Y words | Longest: Z words (domain.com)".
-     - **Weakest competitors:** Identify 2-3 competitors in the SERP that are realistic targets to outrank based on lower DR, thinner content, or fewer backlinks. Explain WHY each is beatable from a content perspective.
-     - **Content positioning opportunities:** Based on the gap analysis, what specific content angles or depth improvements would help close the gap? Be specific — reference competitor topics, word counts, and content structures.
-   CRITICAL: Do NOT include any off-page recommendations like "build more backlinks", "improve domain authority", or "pursue link building." Content-level observations ONLY. Frame all competitive gaps in terms of CONTENT improvements.
+**Divergence & Gaps:** Write 2-3 sentences about where the page falls short compared to competitors. Be specific — name the topics, sections, or questions competitors address that this page does not. Reference the primary cause of underperformance identified in your analysis.
 
-8. **Recommendations** — Concrete, actionable content changes for the primary page:
-   - **Title tag alternatives** — Provide **2-5 alternative title tags**, each 50–60 chars. Each must include the primary keyword. Each alternative must be meaningfully different (not just word order swaps). If the current title is already strong, the first option can be "No Changes" with a rationale explaining why. Include a table: | # | Recommended Title | Chars | Rationale |
-   - **Meta description alternatives** — Provide **2-5 alternative meta descriptions**, each 150–160 chars. Each must be meaningfully different. If the current meta is already strong, the first option can be "No Changes". Include a table: | # | Recommended Meta Description | Chars | Rationale |
-   - **Heading comparison table** — MANDATORY format: | Level (H1/H2/H3) | Current Heading | Recommended Heading | Rationale |. Include ALL headings from the scraped page. Recommended headings must be concise (max 8-10 words) and direct — no creative marketing flair. If a heading is already good, write "Keep as is" in the Recommended column. If a heading should be removed, write "Remove" with rationale. Always classify the heading level (H1, H2, H3). The Rationale column must reference a specific finding (competitor topic, SERP pattern, content gap, or keyword data) — never write generic reasons like "improved clarity" or "better keyword targeting".
+**Actionable Gaps (Competitor Analysis):** List 3-5 specific sections recommended for addition or expansion based on competitor heading gap analysis. Use a bullet list ONLY for this part.
 
-9. **Content Reoptimization** — Specific content changes needed on the page:
-   - Which existing sections need new or revised H2/H3 headings — for each, state the recommended heading (max 8-10 words) AND explain what specific content gap it fills or what SERP/competitor data supports the change (e.g. "5 of 10 SERP competitors cover this topic" or "addresses PAA question about X")
-   - Visual content recommendations: specific charts, graphs, tables, or infographics to add — describe exactly what data each visual should show and where on the page it should go
-   - Content to add, remove, or restructure — be specific about which sections, reference them by heading name
-   - Recommended new headings with reasoning grounded in specific SERP findings or competitor content patterns (never generic reasoning like "for better structure")
+Keep it condensed and strategic — no fluff.
 
-10. **Internal Linking** — Bidirectional internal linking analysis. MANDATORY table format: | Direction | Anchor Text | URL | Rationale |
-   - **Outbound (from this page to other internal pages):** List internal links already on the page (from scraped data). Recommend 3-5 additional internal links to add — use specific anchor text and target URLs from the same domain (based on the internal links found during scraping and the "Other pages on this domain" list if provided).
-   - **Inbound (from other pages to this page):** Recommend 3-5 pages on the same domain that should link TO this page. You MUST use real URLs from the "Other pages on this domain" data if provided — do NOT use placeholder URLs. For each, provide the source URL, specific anchor text, and rationale for why that page should link here.
+---
 
-11. **FAQs** — Create an FAQ section for the article:
-    - Use "People Also Ask" questions from SERP data if available.
-    - If PAA questions are not available or insufficient, create 3-5 catered FAQ questions relevant to the keyword and content intent.
-    - For each FAQ, provide the question AND a brief suggested answer (2-3 sentences).
+## SEO Improvements
 
-12. **Key Takeaways** — List exactly 5-7 key takeaways. Each must be a specific content finding from the analysis (not generic SEO advice). Format as actionable bullet points that reference specific sections, headings, or content gaps identified in this report.
+### Keywords
 
-13. **Additional Recommendations** — THE MOST IMPORTANT SECTION. Numbered list of specific content changes to implement on the primary URL. Each item MUST:
-    - Specify WHAT to change (heading, paragraph, section, image, table, etc.)
-    - Specify WHERE on the page (reference the section by heading name)
-    - Explain WHY (what gap it fills, what SERP data supports it)
-    - Be a concrete edit to the EXISTING page — NOT creation of new standalone assets
-    - Examples of GOOD items: "Add a comparison table under the 'Types of X' section showing...", "Replace the intro paragraph with...", "Remove the outdated statistics in the 'Benefits' section and replace with...", "Add a mid-post CTA after the 'Benefits' section linking to the product demo page"
-    - EXPLICITLY FORBIDDEN: Do NOT recommend creating downloadable checklists, separate landing pages, new blog posts, glossary pages, or any standalone assets. Do NOT recommend social media promotion, LinkedIn posts, PR campaigns, email marketing, or distribution strategies. Focus ONLY on editing the existing page content.
+**Currently ranking keyword(s):** List top 5 keywords the article ranks for from GSC data (format: keyword / MSV / KW difficulty). If GSC data is not available, state "GSC data not available."
 
-14. **AEO/GEO Recommendations** — Recommendations for Answer Engine Optimization and Generative Engine Optimization (content-level only). Use the "SERP Features Detected" data if provided. This section MUST include concrete tables and figures — not just prose:
-    - **Current AI/Featured Snippet presence:** If AI Overview or Featured Snippet data was detected in the SERP, describe what Google is currently showing (the title, source URL, and what content is being cited). If no SERP features detected, state that.
-    - **How to win/maintain the featured snippet or AI citation:** Based on the detected SERP features, what specific content structure, formatting, or additions would help this page get cited? Reference the actual snippet content if available.
-    - **AI Extractability Audit table** — MANDATORY. Create a table: | Element | Current State | Recommended Change | Priority |. Audit these elements: Definition at top of page, FAQ schema/section, Structured lists, Data tables, Concise answer paragraphs (<50 words), "What is X?" headings, Comparison tables, Statistics/data points. For each, assess whether it exists on the page and what to add/change.
-    - **Recommended Visual Content for AI Citation table** — MANDATORY. Create a table: | Visual Type | Description | Placement | Why AI Engines Prefer This |. List 3-5 specific charts, graphs, tables, or infographics with exact descriptions of what data each should contain, where on the page it should go, and why AI engines are likely to cite it.
-    - **Content formatting changes** — Specific changes to improve AI extractability: lists, tables, concise definitions, "What is X?" patterns.
+**Recommended Primary Keyword (non-branded):**
+- [primary keyword] / [search volume]
 
-15. **Quick Reference** — URL | Primary keyword | Priorities | Heading casing (if applicable).
+**Recommended Secondary Keywords (non-branded):**
+- [keyword] / [search volume]
+- [keyword] / [search volume]
+- [keyword] / [search volume]
+(Use exact MSV from Ahrefs data. Never invent numbers.)
+
+### Metadata
+
+Use a table with two columns. The left column shows the current value, the right column shows the recommendations. Format EXACTLY like this:
+
+| Current Meta Title: | Recommended Meta Title: |
+|---|---|
+| [exact current title] | 1. [first recommendation] <br> 2. [second recommendation] <br> 3. [third recommendation] |
+
+| Current Meta Description: | Recommended Meta Description: |
+|---|---|
+| [exact current meta description] | 1. [first recommendation] <br> 2. [second recommendation] <br> 3. [third recommendation] |
+
+| Current H1: | Recommended H1: |
+|---|---|
+| [exact current H1] | [recommended H1 or "Keep as is" with rationale] |
+
+IMPORTANT: Use <br> between recommendations to keep all 3 options in ONE table row. Do NOT split recommendations into separate table rows.
 
 Rules:
+- Do NOT include character counts in the output. No "[XX chars]" annotations.
+- Do NOT use HTML tags like <br>.
+- Title recommendations must be 50-60 characters. Meta description recommendations must be 150-160 characters.
+- All metadata recommendations MUST include the primary target keyword.
+- **CRITICAL — PIPE CHARACTER:** If any title or description contains a pipe "|" character (e.g., "Hot Desking Guide | OfficeSpace"), you MUST replace the pipe with a dash "–" in the table output (e.g., "Hot Desking Guide – OfficeSpace"). This prevents the markdown table from breaking. Apply this to BOTH current values and recommendations.
+
+### Headers
+
+THIS IS A MANDATORY SECTION — it must ALWAYS be present and must NEVER be empty.
+
+Heading comparison table format: | Level (H1/H2/H3) | Current Heading | Recommended Heading | Rationale |
+
+Include EVERY heading from the scraped page data (the "Full heading hierarchy" in the input). You MUST use the actual headings — never show "(none)" as a current heading if headings were provided in input.
+
+**CRITICAL — ANALYZE EACH HEADING INDIVIDUALLY:**
+- For EVERY heading, evaluate whether it can be improved for keyword targeting, conciseness, clarity, or alignment with search intent.
+- Do NOT default to "Keep as is" — actively look for improvements. At minimum, 40-60% of headings should have a recommended change.
+- Improvements include: making headings more concise, adding keyword relevance, aligning with SERP competitor patterns, making them more action-oriented for the target audience.
+- "Keep as is" is ONLY acceptable when a heading is genuinely well-optimized already. Even then, provide a brief rationale like "Already well-optimized for target keyword."
+- Every row MUST have a rationale — never leave the Rationale column empty.
+- Promotional/non-topical headings (e.g., "Subscribe", "Continue reading", newsletter banners) should be marked "Remove" with rationale.
+
+If the scraped page returned NO headings (empty heading list), you MUST still populate this table by:
+1. Looking at the page body content to identify the actual structure
+2. Using SERP competitor data to recommend a complete heading structure
+3. Marking all entries as **[new header]** with recommended content descriptions
+
+After listing ALL current headings, add 3-5 NEW recommended H2 headings at the bottom of the table.
+
+**ABSOLUTE RULES FOR NEW HEADERS IN THIS TABLE:**
+- Each new header = exactly ONE row. NEVER add H3 sub-rows in this table. H3 details go ONLY in "Content Structure & Additional Content".
+- Leave "Current Heading" column blank. Put **[new header]** at the end of the Rationale column.
+- Example: | H2 |  | Creating a Hot Desking Policy | Addresses implementation gap. **[new header]** |
+
+**ABSOLUTE RULES FOR HEADING LENGTH:**
+- Every recommended heading MUST be 3-8 words maximum. Count the words. If over 8 words, shorten it.
+- BAD (too long): "Overcoming Hot Desking Challenges: Practical Solutions for Employers" (9 words)
+- GOOD (concise): "Solving Common Hot Desking Challenges" (5 words)
+- BAD (too long): "Hot Desking Software: Streamlining Workplace Management for Efficiency" (8+ words)
+- GOOD (concise): "Hot Desking Software Solutions" (4 words)
+
+All promotional headings (Subscribe, Continue reading, newsletter, exclusive insights) MUST be marked "Remove" — never rename them.{casing_note}
+
+| Level (H1/H2/H3) | Current Heading | Recommended Heading | Rationale |
+|---|---|---|---|
+| ... | ... | ... | ... |
+
+### Internal Linking
+
+THIS IS A MANDATORY SECTION — it must ALWAYS be present with real, full URLs.
+
+This section must recommend NEW internal links to add — do NOT just list existing links on the page.
+
+**CRITICAL URL RULES:**
+- You MUST use complete, real URLs (e.g., https://www.example.com/features/desk-booking/)
+- NEVER use placeholder text like [OfficeSpace blog post about X] or [URL] or [OfficeSpace feature page]
+- Get URLs from: (1) "Other pages on this domain" data, (2) internal links found on the scraped page, (3) SERP competitor data showing the target domain's pages
+- If you cannot find real URLs from the data provided, construct logical URLs based on the domain structure (e.g., if the domain is officespacesoftware.com and you're recommending a link to a desk booking feature, use https://www.officespacesoftware.com/features/desk-booking/)
+
+**Links to add ON this page (pointing to other pages on the site):** Recommend 3-5 new internal links to add within the content of this page. For each, specify the exact section where it should be placed.
+
+| Anchor Text | Link To (Destination URL) | Where to Place It | Why It Adds Value |
+|---|---|---|---|
+| [anchor text] | [full real URL] | [exact section heading name] | [why this link helps the reader] |
+
+**Links to add on OTHER pages (pointing back to this page):** Recommend 3-5 pages on the same domain that should add a link pointing TO this page.
+
+| From Page (Source URL) | Anchor Text | Why Link Here |
+|---|---|---|
+| [full real URL of the other page] | [anchor text to use] | [why that page should link to this article] |
+
+If no strong internal link match exists for a recommendation, flag it as a missing internal content opportunity.
+
+---
+
+## Content Improvements
+
+### Key Takeaways
+List 3-6 key takeaways as simple, clear bullet points. Each should be a specific, actionable content finding grounded in the analysis — not generic SEO advice. Write them as plain statements about what the page needs. Each takeaway must be tied to a specific gap, competitor insight, or performance finding.
+
+Example of GOOD key takeaways:
+- The page needs to address common challenges in implementing hot desking and provide actionable solutions tailored to facilities managers.
+- There is an opportunity to expand on the different types of hot desking arrangements.
+- The page lacks visual content (charts, tables) to illustrate data and comparisons.
+- A clear outline should be given on how to implement a Hot Desking Policy.
+- The article will perform better if the reader can follow the implementation with an easy to use checklist.
+
+Example of BAD key takeaways (do NOT write like this):
+- The page needs to address common challenges in implementing hot desking. (Addressed in "Common Hot Desking Challenges & How to Solve Them")
+- Improve SEO by adding keywords throughout the content.
+
+Do NOT add parenthetical references to section names. Do NOT write generic SEO advice. Keep them clean, specific, and readable.
+
+### Multimodal Assets and/or Image Alt Text
+Recommend only small, effective visual elements that enhance clarity and E-E-A-T without over-complicating the layout. Keep suggestions simple and practical. For each recommendation, explain WHY it improves E-E-A-T or engagement:
+- Simple comparison tables (e.g., X vs Y vs Z)
+- Relevant images or diagrams with descriptive alt text
+- Basic charts showing key data points
+Limit to 3-5 specific, actionable suggestions. For each, describe what it should show and where on the page it should go.
+
+### FAQs
+Generate 3-5 FAQ questions that a user would naturally ask about the article topic. These should be:
+- Natural questions that arise from reading the article content
+- Aligned with user intent for this topic
+- NOT just copied from People Also Ask — generate questions that feel organic to the article
+- Each with a concise suggested answer (2-3 sentences)
+- Ready for FAQ Schema implementation
+- Incorporating semantic variations of the primary keyword
+
+### Content Structure & Additional Content
+Provide specific, detailed content changes needed on the page. This section must be comprehensive and actionable. Structure this section EXACTLY like this:
+
+First, list 3-5 specific heading changes with bullet points. Be detailed — include H3 sub-headings for each new H2:
+- Add a new H2 heading: "[heading name]". [Explain what content gap it fills and what SERP/competitor data supports it.]
+  - Include the following H3 headings:
+  - [H3 heading 1]
+  - [H3 heading 2]
+  - [H3 heading 3]
+- Revise the H2 heading: "[old heading]" to "[new heading]". [Explain why based on competitor analysis or SERP patterns.]
+  - Add the following H3 headings:
+  - [H3 heading 1]
+  - [H3 heading 2]
+
+Then add a sub-section:
+
+**Content to add, remove, or restructure:**
+- Add: [what to add and where — be specific about placement]
+- Expand: [what to expand and what to include — reference competitor content or SERP gaps]
+- Remove: [what to remove and why — explain how it detracts from the page]
+- Restructure: [what to restructure and how — explain the improved flow]
+
+Then add:
+
+**Recommended new headings:**
+- [heading name] — [reasoning grounded in specific SERP findings or competitor content patterns]
+
+(Do NOT include visual content recommendations here — those go in Multimodal Assets above.)
+
+---
+
+## Additional Recommendations
+Numbered list of 4-6 specific content changes to implement on the primary URL. Each item MUST:
+- Specify WHAT to change (heading, paragraph, section, image, table, etc.)
+- Specify WHERE on the page (reference the section by heading name)
+- Explain WHY (what gap it fills, what SERP data supports it)
+- Be a concrete edit to the EXISTING page — NOT creation of new standalone assets
+EXPLICITLY FORBIDDEN: Do NOT recommend creating downloadable checklists, separate landing pages, new blog posts, glossary pages, or any standalone assets. Do NOT recommend social media promotion, LinkedIn posts, PR campaigns, email marketing, or distribution strategies. Focus ONLY on editing the existing page content.
+
+---
+
+## Impact Summary
+Based on the analysis, provide:
+- **Expected SEO Impact:** 1-2 sentences on expected improvement in visibility, rankings, and AI discoverability.
+- **Expected Behavioral Impact:** 1-2 sentences on expected improvement in CTR, engagement, and conversion.
+
+---
+
+## OUTPUT RULES
 - **#1 RULE — Focus on the primary URL.** Every recommendation must be about improving THIS specific page's content.
-- **#2 RULE — CONTENT ONLY.** Never recommend backlink building, domain authority improvement, link outreach, guest posting, PR campaigns, or any off-page strategy. All recommendations must be about on-page content changes.
+- **#2 RULE — CONTENT ONLY.** Never recommend off-page strategies.
+- **#3 RULE — FOLLOW THE TEMPLATE.** Output ONLY the sections above (Overview, Executive Summary, SEO Improvements, Content Improvements, Additional Recommendations, Impact Summary). Do NOT add extra sections. Do NOT output "SECTION 1:", "SECTION 2:", "STEP 1:", "STEP 2:" or similar labels — just use heading names.
+- **#4 RULE — USE ACTUAL DATA.** For the Headers table, you MUST use the actual headings from the scraped page data. Never show "(none)" as a current heading if headings were provided in the input data. Every heading from the scraped page must appear in the table.
+- **#5 RULE — BE ANALYTICAL, NOT LAZY.** Do NOT default to "Keep as is" for most headings. Actively analyze every heading and recommend concrete improvements. At minimum 40-60% of headings should have a recommended change. Every Rationale cell must contain a reason — never leave it empty.
+- **#6 RULE — BE SPECIFIC AND DATA-DRIVEN.** Avoid generic SEO advice. Every recommendation must reference specific data from the input: competitor content, SERP patterns, keyword volumes, content gaps, or page performance metrics. Generic statements like "add more keywords" or "improve SEO" are unacceptable.
 - If a client profile was provided, EVERY section must be tailored to it.
-- Heading recommendations must be DIRECT — no verbose marketing headers like "Unlock the Power of X." Use clear, search-intent-focused headings. Say "Keep as is" when a heading is already good.
-- Ground all recommendations in the data provided. No hallucinations.
-- No guarantees (e.g. "will rank #1"). Be realistic.
-- Use markdown: headers, tables, lists, bold where helpful.{casing_note}
+- Ground all recommendations in the data provided. No hallucinations. No guarantees.
+- Use markdown: headers, tables, lists, bold where helpful.
+- Do NOT use HTML tags (no <br>, no <p>, no <table>). Use only markdown formatting.
+- The Executive Summary must be no more than half a page — keep it condensed and strategic.
 - Output the full report only — no preamble or "Here is the report"."""
 
     try:

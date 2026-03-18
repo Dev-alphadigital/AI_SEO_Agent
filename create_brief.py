@@ -317,12 +317,9 @@ def main():
     if args.client:
         client_profile = get_client_profile(args.client)
         if client_profile:
-            # Check if it's a saved profile or auto-generated
-            is_saved = args.client.strip().lower() in [k.lower() for k in list_clients()]
-            if is_saved:
-                print(f"Client: {args.client} (profile loaded)")
-            else:
-                print(f"Client: {args.client} (auto-generated profile — Gemini will infer from page/SERP data)")
+            print(f"Client: {args.client} (profile loaded)")
+        else:
+            print(f"Client: '{args.client}' not found. Available: {', '.join(list_clients())}")
 
     # Ahrefs keyword MSV (Priority 1 — keyword targets with MSV)
     keyword_msv_context = ""
