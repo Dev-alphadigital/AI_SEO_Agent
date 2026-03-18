@@ -385,15 +385,7 @@ def main():
             domain_pages=domain_pages,
         )
         if report_result.get("success") and report_result.get("report"):
-            header = [
-                "# SEO Optimization Report",
-                f"## Target: {url} | Keyword: {args.keyword}",
-                f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*",
-                "",
-                "---",
-                "",
-            ]
-            brief = "\n".join(header) + report_result["report"]
+            brief = report_result["report"]
             print("Gemini: Full analysis and optimization strategy generated")
         elif report_result.get("error"):
             print(f"Gemini: {report_result['error']} (falling back to template)")

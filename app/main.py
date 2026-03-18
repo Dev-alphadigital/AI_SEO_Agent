@@ -294,12 +294,7 @@ async def webhook_generate_brief(req: BriefRequest):
                     competitor_context=competitor_context,
                 )
                 if gemini_result.get("success") and gemini_result.get("report"):
-                    header = (
-                        f"# SEO Optimization Report\n"
-                        f"## Target: {url} | Keyword: {req.keyword}\n"
-                        f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n---\n\n"
-                    )
-                    report = header + gemini_result["report"]
+                    report = gemini_result["report"]
                     gemini_used = True
             except Exception:
                 pass

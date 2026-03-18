@@ -107,22 +107,32 @@ def _add_styled_table(doc, headers: list[str], rows: list[list[str]]):
 
 
 def _add_rich_text(paragraph, text: str, base_size=Pt(10), base_color=None):
-    """Add text with **bold** and *italic* markdown inline formatting."""
-    # Split on bold and italic markers
-    parts = re.split(r'(\*\*.*?\*\*|\*.*?\*)', text)
-    for part in parts:
-        if part.startswith("**") and part.endswith("**"):
-            run = paragraph.add_run(part[2:-2])
-            run.bold = True
-        elif part.startswith("*") and part.endswith("*"):
-            run = paragraph.add_run(part[1:-1])
-            run.italic = True
-        else:
-            run = paragraph.add_run(part)
-        run.font.size = base_size
-        run.font.name = "Calibri"
-        if base_color:
-            run.font.color.rgb = base_color
+    """Add text with **bold**, *italic*, and <br> line break support."""
+    from docx.oxml.ns import qn as _qn
+    # First split on <br> tags to handle line breaks
+    br_parts = re.split(r'<br\s*/?>', text)
+    for br_idx, br_part in enumerate(br_parts):
+        if br_idx > 0:
+            # Add a line break
+            run = paragraph.add_run()
+            run.font.size = base_size
+            run.font.name = "Calibri"
+            run._r.append(parse_xml(f'<w:br {nsdecls("w")}/>'))
+        # Split on bold and italic markers
+        parts = re.split(r'(\*\*.*?\*\*|\*.*?\*)', br_part)
+        for part in parts:
+            if part.startswith("**") and part.endswith("**"):
+                run = paragraph.add_run(part[2:-2])
+                run.bold = True
+            elif part.startswith("*") and part.endswith("*"):
+                run = paragraph.add_run(part[1:-1])
+                run.italic = True
+            else:
+                run = paragraph.add_run(part)
+            run.font.size = base_size
+            run.font.name = "Calibri"
+            if base_color:
+                run.font.color.rgb = base_color
 
 
 def _parse_md_table(lines: list[str]) -> tuple[list[str], list[list[str]]]:
@@ -155,10 +165,21 @@ def _extract_header_info(md_content: str) -> dict:
     if h1:
         info["title"] = h1.group(1).strip()
 
-    target = re.search(r'^##\s+Target:\s*(.*?)\s*\|\s*Keyword:\s*(.+)$', md_content, re.MULTILINE)
-    if target:
-        info["url"] = target.group(1).strip()
-        info["keyword"] = target.group(2).strip()
+    # New format: **URL:** and **Keyword:** on separate lines
+    url_match = re.search(r'^\*\*URL:\*\*\s*(.+)$', md_content, re.MULTILINE)
+    if url_match:
+        info["url"] = url_match.group(1).strip()
+
+    kw_match = re.search(r'^\*\*Keyword:\*\*\s*(.+)$', md_content, re.MULTILINE)
+    if kw_match:
+        info["keyword"] = kw_match.group(1).strip()
+
+    # Legacy format: ## Target: URL | Keyword: KW
+    if not info["url"]:
+        target = re.search(r'^##\s+Target:\s*(.*?)\s*\|\s*Keyword:\s*(.+)$', md_content, re.MULTILINE)
+        if target:
+            info["url"] = target.group(1).strip()
+            info["keyword"] = target.group(2).strip()
 
     date = re.search(r'^\*Generated:\s*(.+?)\*$', md_content, re.MULTILINE)
     if date:
