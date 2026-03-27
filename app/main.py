@@ -110,6 +110,7 @@ def _safe_header(value: str) -> str:
 
 
 def _normalize_url(url: str) -> str:
+    url = url.strip()  # Remove leading/trailing whitespace
     url = url.split("?")[0].rstrip("/")
     if not url.startswith("http"):
         url = "https://" + url
@@ -219,11 +220,13 @@ async def webhook_generate_brief(req: BriefRequest):
     """
     try:
         url = _normalize_url(req.url)
-        req.keyword = _clean_text(req.keyword)
+        req.keyword = _clean_text(req.keyword).strip()
         if req.secondary_keywords:
-            req.secondary_keywords = _clean_text(req.secondary_keywords)
+            req.secondary_keywords = _clean_text(req.secondary_keywords).strip()
         if req.notes:
-            req.notes = _clean_text(req.notes)
+            req.notes = _clean_text(req.notes).strip()
+        if req.client_name:
+            req.client_name = req.client_name.strip()
 
         # 1. Scrape
         scrape_result = None

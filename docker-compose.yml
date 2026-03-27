@@ -1,0 +1,40 @@
+services:
+  seo-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: ai-seo-agent
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      # API Keys (set in .env file or override here)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      AHREFS_API_KEY: ${AHREFS_API_KEY}
+      SERPER_API_KEY: ${SERPER_API_KEY}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/credentials/gsc-service-account.json}
+
+    volumes:
+      # Mount .env file
+      - .env:/app/.env:ro
+
+      # Mount credentials directory for GSC
+      - ./credentials:/app/credentials:ro
+
+      # Mount output directory for reports
+      - ./output:/app/output
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Resource limits (optional)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2'
+    #       memory: 4G
+    #     reservations:
+    #       cpus: '1'
+    #       memory: 2G

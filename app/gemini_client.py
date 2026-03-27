@@ -211,7 +211,7 @@ def generate_full_seo_report(
 
 **CRITICAL — NON-NEGOTIABLE:** The ENTIRE report must be tailored to this client profile. Every recommendation, every heading suggestion, every meta description, every internal linking idea — ALL must align with this client's target audience, brand positioning, values, and voice. A generic report is UNACCEPTABLE. The reader must be able to tell which client this report is for just by reading any section.
 
-**If "Specific content instructions" are listed above, you MUST address them explicitly in the Additional Recommendations section.** These are direct client requirements and take priority."""
+**If "Specific content instructions" are listed above, you MUST address them explicitly throughout the report.** These are direct client requirements and take priority."""
         client_overview_fields = f"""
 Under **Overview**, include:
 - **Client:** {client_name or 'Unknown'}
@@ -295,7 +295,7 @@ Write a content reoptimization brief in Markdown following this EXACT template s
 
 ---
 
-## Executive Summary
+## Content & SERP Insights
 Write a concise executive summary combining SERP intent analysis and SERP observations. This MUST be no more than half a page long. Structure it as flowing paragraphs with bold labels — NOT as a bullet list of headings. Use this format:
 
 **SERP Intent:** Write 2-3 sentences describing what users are looking for when they search this keyword. Include the classified search intent type (Informational/Commercial/Navigational).
@@ -304,7 +304,7 @@ Write a concise executive summary combining SERP intent analysis and SERP observ
 
 **Divergence & Gaps:** Write 2-3 sentences about where the page falls short compared to competitors. Be specific — name the topics, sections, or questions competitors address that this page does not. Reference the primary cause of underperformance identified in your analysis.
 
-**Actionable Gaps (Competitor Analysis):** List 3-5 specific sections recommended for addition or expansion based on competitor heading gap analysis. Use a bullet list ONLY for this part.
+**Additional Content Investments (Competitor Analysis):** List 3-5 specific sections recommended for addition or expansion based on competitor heading gap analysis. Use a bullet list ONLY for this part.
 
 Keep it condensed and strategic — no fluff.
 
@@ -403,17 +403,19 @@ This section must recommend NEW internal links to add — do NOT just list exist
 - Get URLs from: (1) "Other pages on this domain" data, (2) internal links found on the scraped page, (3) SERP competitor data showing the target domain's pages
 - If you cannot find real URLs from the data provided, construct logical URLs based on the domain structure (e.g., if the domain is officespacesoftware.com and you're recommending a link to a desk booking feature, use https://www.officespacesoftware.com/features/desk-booking/)
 
-**Links to add ON this page (pointing to other pages on the site):** Recommend 3-5 new internal links to add within the content of this page. For each, specify the exact section where it should be placed.
+**Links to add ON this page (pointing to other pages on the site):** Recommend 3-5 new internal links to add within the content of this page. Check the page body text to see if the anchor text already exists on the page. For each link:
+- If the anchor text ALREADY EXISTS on the page, mark it as [EXISTING] and specify where to find it
+- If the anchor text needs to be ADDED as new content, mark it as [NEW] and specify where in the page structure it should be added
 
-| Anchor Text | Link To (Destination URL) | Where to Place It | Why It Adds Value |
-|---|---|---|---|
-| [anchor text] | [full real URL] | [exact section heading name] | [why this link helps the reader] |
-
-**Links to add on OTHER pages (pointing back to this page):** Recommend 3-5 pages on the same domain that should add a link pointing TO this page.
-
-| From Page (Source URL) | Anchor Text | Why Link Here |
+| Anchor Text | Link To (Destination URL) | Where to place new anchor text |
 |---|---|---|
-| [full real URL of the other page] | [anchor text to use] | [why that page should link to this article] |
+| [EXISTING] anchor text OR [NEW] anchor text | [full real URL] | Use existing text in [section name] OR Add new phrase in [section name] |
+
+**Links to add on OTHER pages (pointing back to this page):** Recommend 3-5 pages on the same domain that should add a link pointing TO this page. For each recommendation, check if the anchor text would naturally exist in that page's content. Specify placement clearly.
+
+| From Page (Source URL) | Anchor Text | Where to place new anchor text |
+|---|---|---|
+| [full real URL of the other page] | [anchor text to use] | Use existing text in [section name] OR Add new phrase in [section name] |
 
 If no strong internal link match exists for a recommendation, flag it as a missing internal content opportunity.
 
@@ -422,20 +424,20 @@ If no strong internal link match exists for a recommendation, flag it as a missi
 ## Content Improvements
 
 ### Key Takeaways
-List 3-6 key takeaways as simple, clear bullet points. Each should be a specific, actionable content finding grounded in the analysis — not generic SEO advice. Write them as plain statements about what the page needs. Each takeaway must be tied to a specific gap, competitor insight, or performance finding.
+List 3-6 key takeaways as simple, clear bullet points. Summarize the main lessons and insights FROM the blog content itself — what would a reader learn from reading this article? Do NOT write SEO recommendations or what the page "needs to improve" here. Each takeaway should reflect the actual content and the value it delivers to readers.
 
 Example of GOOD key takeaways:
-- The page needs to address common challenges in implementing hot desking and provide actionable solutions tailored to facilities managers.
-- There is an opportunity to expand on the different types of hot desking arrangements.
-- The page lacks visual content (charts, tables) to illustrate data and comparisons.
-- A clear outline should be given on how to implement a Hot Desking Policy.
-- The article will perform better if the reader can follow the implementation with an easy to use checklist.
+- Hot desking is a flexible workspace strategy that maximizes office space efficiency and can reduce real estate costs.
+- Implementing hot desking requires clear policies, technology solutions (badge systems, desk booking software), and strong communication with employees.
+- Hot desking works best when combined with other workplace strategies like activity-based working and flexible scheduling.
+- Employee experience is critical — provide proper training, clear desk protocols, and adequate storage solutions to ensure adoption.
+- Hot desking can improve collaboration and reduce the rigid boundaries between departments.
 
 Example of BAD key takeaways (do NOT write like this):
-- The page needs to address common challenges in implementing hot desking. (Addressed in "Common Hot Desking Challenges & How to Solve Them")
-- Improve SEO by adding keywords throughout the content.
+- The page needs to address common challenges in implementing hot desking. (This is an SEO recommendation, not a content lesson)
+- Improve SEO by adding keywords throughout the content. (This is generic SEO advice, not content insight)
 
-Do NOT add parenthetical references to section names. Do NOT write generic SEO advice. Keep them clean, specific, and readable.
+Keep them clean, specific, and readable. Each should be a standalone statement about what the article teaches.
 
 ### Multimodal Assets and/or Image Alt Text
 Recommend only small, effective visual elements that enhance clarity and E-E-A-T without over-complicating the layout. Keep suggestions simple and practical. For each recommendation, explain WHY it improves E-E-A-T or engagement:
@@ -484,16 +486,6 @@ Then add:
 
 ---
 
-## Additional Recommendations
-Numbered list of 4-6 specific content changes to implement on the primary URL. Each item MUST:
-- Specify WHAT to change (heading, paragraph, section, image, table, etc.)
-- Specify WHERE on the page (reference the section by heading name)
-- Explain WHY (what gap it fills, what SERP data supports it)
-- Be a concrete edit to the EXISTING page — NOT creation of new standalone assets
-EXPLICITLY FORBIDDEN: Do NOT recommend creating downloadable checklists, separate landing pages, new blog posts, glossary pages, or any standalone assets. Do NOT recommend social media promotion, LinkedIn posts, PR campaigns, email marketing, or distribution strategies. Focus ONLY on editing the existing page content.
-
----
-
 ## Impact Summary
 Based on the analysis, provide:
 - **Expected SEO Impact:** 1-2 sentences on expected improvement in visibility, rankings, and AI discoverability.
@@ -504,7 +496,7 @@ Based on the analysis, provide:
 ## OUTPUT RULES
 - **#1 RULE — Focus on the primary URL.** Every recommendation must be about improving THIS specific page's content.
 - **#2 RULE — CONTENT ONLY.** Never recommend off-page strategies.
-- **#3 RULE — FOLLOW THE TEMPLATE.** Output ONLY the sections above (Overview, Executive Summary, SEO Improvements, Content Improvements, Additional Recommendations, Impact Summary). Do NOT add extra sections. Do NOT output "SECTION 1:", "SECTION 2:", "STEP 1:", "STEP 2:" or similar labels — just use heading names.
+- **#3 RULE — FOLLOW THE TEMPLATE.** Output ONLY the sections above (Overview, Content & SERP Insights, SEO Improvements, Content Improvements, Impact Summary). Do NOT add extra sections. Do NOT output "SECTION 1:", "SECTION 2:", "STEP 1:", "STEP 2:" or similar labels — just use heading names.
 - **#4 RULE — USE ACTUAL DATA.** For the Headers table, you MUST use the actual headings from the scraped page data. Never show "(none)" as a current heading if headings were provided in the input data. Every heading from the scraped page must appear in the table.
 - **#5 RULE — BE ANALYTICAL, NOT LAZY.** Do NOT default to "Keep as is" for most headings. Actively analyze every heading and recommend concrete improvements. At minimum 40-60% of headings should have a recommended change. Every Rationale cell must contain a reason — never leave it empty.
 - **#6 RULE — BE SPECIFIC AND DATA-DRIVEN.** Avoid generic SEO advice. Every recommendation must reference specific data from the input: competitor content, SERP patterns, keyword volumes, content gaps, or page performance metrics. Generic statements like "add more keywords" or "improve SEO" are unacceptable.
@@ -512,7 +504,7 @@ Based on the analysis, provide:
 - Ground all recommendations in the data provided. No hallucinations. No guarantees.
 - Use markdown: headers, tables, lists, bold where helpful.
 - Do NOT use HTML tags (no <br>, no <p>, no <table>). Use only markdown formatting.
-- The Executive Summary must be no more than half a page — keep it condensed and strategic.
+- The Content & SERP Insights section must be no more than half a page — keep it condensed and strategic.
 - Output the full report only — no preamble or "Here is the report"."""
 
     try:

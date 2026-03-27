@@ -1,0 +1,58 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Environment files (SECURITY: .env should NOT be in image)
+.env
+.env.*
+*.env
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Reports and outputs (user mounts these)
+output/
+output/*
+credentials/
+credentials/*
+
+# Logs
+*.log
+logs/
+
+# Node (if any)
+node_modules/
+npm-debug.log
+
+# Planning/documentation (not needed in container)
+.claude
+.agents
+.planning
+
+# Misc
+.pytest_cache
+.coverage
+.env.local
+*.tmp
